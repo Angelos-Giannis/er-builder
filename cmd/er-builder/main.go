@@ -29,7 +29,7 @@ func main() {
 	var options domain.Options
 
 	app.Commands = []*cli.Command{
-		&cli.Command{
+		{
 			Name:    "generate",
 			Aliases: []string{"g"},
 			Usage:   "Generate the .er file based on the provided structures.",
