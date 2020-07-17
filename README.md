@@ -1,11 +1,11 @@
-# er-builder
+# erbuilder
 
 ![version](https://img.shields.io/badge/version-v0.1.0-brightgreen)
 ![golang-version](https://img.shields.io/badge/Go-1.14-blue)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
-[![master-actions Actions Status](https://github.com/Angelos-Giannis/er-builder/workflows/master-actions/badge.svg)](https://github.com/Angelos-Giannis/er-builder/actions)
-[![GoDoc](https://godoc.org/github.com/gocarina/gocsv?status.png)](https://godoc.org/github.com/Angelos-Giannis/er-builder)
-[![Go Report Card](https://goreportcard.com/badge/github.com/Angelos-Giannis/er-builder)](https://goreportcard.com/report/github.com/Angelos-Giannis/er-builder)
+[![master-actions Actions Status](https://github.com/Angelos-Giannis/erbuilder/workflows/master-actions/badge.svg)](https://github.com/Angelos-Giannis/erbuilder/actions)
+[![GoDoc](https://godoc.org/github.com/gocarina/gocsv?status.png)](https://godoc.org/github.com/Angelos-Giannis/erbuilder)
+[![Go Report Card](https://goreportcard.com/badge/github.com/Angelos-Giannis/erbuilder)](https://goreportcard.com/report/github.com/Angelos-Giannis/erbuilder)
 
 The purpose of this tool is to parse a file or a list of files containing the mappping against the database and generate an `.er` file describing the database modeling.
 
@@ -14,7 +14,7 @@ The purpose of this tool is to parse a file or a list of files containing the ma
 In order to be able to use this you simply have to :
 
 ```shell
-go get github.com/Angelos-Giannis/er-builder
+go get github.com/Angelos-Giannis/erbuilder
 ```
 
 ## Definition of commands
@@ -45,5 +45,5 @@ OPTIONS:
 To generate a new `.er` file with the database models, a command like the following needs to be executed :
 
 ```shell
-go run cmd/er-builder/main.go generate --directory "./test/" --output_path "./test/" --output_filename "example-er-diagram" --id_field id --tag db --title example_db
+go run cmd/erbuilder/main.go generate --directory "./test/" --output_path "./test/" --output_filename "example-er-diagram" --id_field id --tag db --title example_db
 ```
