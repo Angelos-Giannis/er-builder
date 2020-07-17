@@ -4,15 +4,14 @@ import "github.com/urfave/cli/v2"
 
 // Options describe the allowed options of the cli tool.
 type Options struct {
-	CommonFields         cli.StringSlice
-	Directory            string
-	FileList             cli.StringSlice
-	IDField              string
-	OutputFilename       string
-	OutputImageExtension string
-	OutputPath           string
-	Tag                  string
-	Title                string
+	CommonFields   cli.StringSlice
+	Directory      string
+	FileList       cli.StringSlice
+	IDField        string
+	OutputFilename string
+	OutputPath     string
+	Tag            string
+	Title          string
 }
 
 // GetCommonField returns the definition for common_field flag
@@ -103,7 +102,7 @@ func (o *Options) GetTitle() *cli.StringFlag {
 	return &cli.StringFlag{
 		Name:        "title",
 		Usage:       "Title to be included in the exported image.",
-		Value:       "",
+		Value:       "Database Schema",
 		Destination: &o.Title,
 		Required:    false,
 	}

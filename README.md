@@ -1,4 +1,4 @@
-# erd-builder
+# er-builder
 
 ![version](https://img.shields.io/badge/version-v0.1.0-brightgreen)
 ![golang-version](https://img.shields.io/badge/Go-1.13-blue)

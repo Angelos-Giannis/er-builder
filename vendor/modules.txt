@@ -4,8 +4,9 @@ github.com/cpuguy83/go-md2man/v2/md2man
 github.com/russross/blackfriday/v2
 # github.com/shurcooL/sanitized_anchor_name v1.0.0
 github.com/shurcooL/sanitized_anchor_name
-# github.com/urfave/cli v1.22.4
+# github.com/udhos/equalfile v0.3.0
 ## explicit
+github.com/udhos/equalfile
 # github.com/urfave/cli/v2 v2.2.0
 ## explicit
 github.com/urfave/cli/v2
