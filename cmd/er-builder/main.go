@@ -5,9 +5,9 @@ import (
 	"log"
 	"os"
 
-	"github.com/Angelos-Giannis/erd-builder/internal/app/service"
-	"github.com/Angelos-Giannis/erd-builder/internal/config"
-	"github.com/Angelos-Giannis/erd-builder/internal/domain"
+	"github.com/Angelos-Giannis/er-builder/internal/app/service"
+	"github.com/Angelos-Giannis/er-builder/internal/config"
+	"github.com/Angelos-Giannis/er-builder/internal/domain"
 	"github.com/urfave/cli/v2"
 )
 

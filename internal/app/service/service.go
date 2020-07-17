@@ -15,7 +15,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/Angelos-Giannis/erd-builder/internal/domain"
+	"github.com/Angelos-Giannis/er-builder/internal/domain"
 )
 
 // Service describes the service flow.
