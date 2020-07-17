@@ -1,4 +1,4 @@
-module github.com/Angelos-Giannis/er-builder
+module github.com/Angelos-Giannis/erbuilder
 
 go 1.14
 

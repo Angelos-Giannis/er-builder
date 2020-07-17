@@ -5,7 +5,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/Angelos-Giannis/er-builder/internal/domain"
+	"github.com/Angelos-Giannis/erbuilder/internal/domain"
 	"github.com/urfave/cli/v2"
 )
 
