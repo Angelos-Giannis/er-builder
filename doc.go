@@ -16,7 +16,24 @@ Also, this can be used as an external package in any service. To use this tool a
 		"github.com/Angelos-Giannis/erbuilder/internal/domain"
 	)
 
+	// Config describes the configuration of the service.
+	type Config struct {
+		Settings settings
+	}
+
+	type settings struct {
+		AllowedColumnNameCaseValues []string
+		AllowedTableNameCaseValues  []string
+	}
+
 	func main() {
+		cfg := Config{
+			Settings: settings{
+				AllowedColumnNameCaseValues: []string{"snake_case", "camelCase", "screaming_snake_case", "kebab_case"},
+				AllowedTableNameCaseValues:  []string{"snake_case", "camelCase", "screaming_snake_case", "kebab_case"},
+			},
+		}
+
 		// Specify your values for the options.
 		options := domain.Options{
 			Directory:      "./../../../test/",
@@ -26,6 +43,9 @@ Also, this can be used as an external package in any service. To use this tool a
 			OutputPath:     "./../../../test",
 			Tag:            "db",
 			Title:          "example_db",
+			ColumnNameCase: "snake_case",
+			TableNameCase:  "snake_case",
+			Config:         cfg,
 		}
 		actualService := service.New(options)
 		_ = actualService.Generate()

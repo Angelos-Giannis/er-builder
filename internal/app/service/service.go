@@ -1,7 +1,6 @@
 package service
 
 import (
-	"errors"
 	"fmt"
 	"go/ast"
 	"go/parser"
@@ -18,9 +17,15 @@ import (
 	"github.com/Angelos-Giannis/erbuilder/internal/domain"
 )
 
+type util interface {
+	GetCaseOfString(initialValue, convertToCase string) string
+	GetValueCount(isPlural bool, initialValue string) string
+}
+
 // Service describes the service flow.
 type Service struct {
 	options domain.Options
+	util    util
 }
 
 type column struct {
@@ -30,18 +35,15 @@ type column struct {
 }
 
 // New creates and returns a new service.
-func New(options domain.Options) *Service {
+func New(options domain.Options, util util) *Service {
 	return &Service{
 		options: options,
+		util:    util,
 	}
 }
 
 // Generate performs the action to generate the .er file based on the provided input.
 func (s *Service) Generate() error {
-	if s.options.Directory == "" && len(s.options.FileList.Value()) == 0 {
-		return errors.New("Need to provide at least one of 'directory' or 'file_list'")
-	}
-
 	filesToParse := defineFilesToParse(s.options.Directory, s.options.FileList.Value())
 	tagRegexp := getTagRegexp(s.options.Tag)
 
@@ -109,17 +111,24 @@ func (s *Service) writeToFile(tableMapping map[string][]column) error {
 	}
 	sort.Strings(keys)
 
+	_, err = outputFile.WriteString("\n")
+	if err != nil {
+		return err
+	}
+
 	_, err = outputFile.WriteString("# Definition of tables.\n")
 	if err != nil {
 		return err
 	}
+
 	for _, tb := range keys {
-		checkingTable := strings.ToLower(fmt.Sprintf("%v", tb))
+		checkingTable := fmt.Sprintf("%v", tb)
 		if len(tableMapping[tb]) == 0 {
 			continue
 		}
 
-		_, err = outputFile.WriteString(fmt.Sprintf("[%v]\n", tb))
+		tableName := s.util.GetCaseOfString(tb, s.options.TableNameCase)
+		_, err = outputFile.WriteString(fmt.Sprintf("[%v]\n", s.util.GetValueCount(s.options.TableNamePlural, tableName)))
 		if err != nil {
 			return err
 		}
@@ -134,16 +143,32 @@ func (s *Service) writeToFile(tableMapping map[string][]column) error {
 		for _, col := range tableMapping[tb] {
 			fkPrefix := ""
 			for intTB := range tableMapping {
-				fld := strings.ToLower(fmt.Sprintf("%v", col.fieldName))
-				currentTB := strings.ToLower(fmt.Sprintf("%v", intTB))
+				fld := s.util.GetCaseOfString(fmt.Sprintf("%v", col.fieldName), s.options.ColumnNameCase)
+				currentTB := s.util.GetCaseOfString(fmt.Sprintf("%v", intTB), s.options.TableNameCase)
 
-				if strings.Contains(fld, currentTB) {
-					foreignKeyConnections = append(foreignKeyConnections, fmt.Sprintf("%v *--* %v {label: \"%v\"}", checkingTable, currentTB, fld))
+				if strings.Contains(fld, currentTB) || strings.Contains(fld, s.util.GetValueCount(s.options.TableNamePlural, currentTB)) {
+					checkingTable = s.util.GetCaseOfString(checkingTable, s.options.TableNameCase)
+					foreignKeyConnections = append(
+						foreignKeyConnections,
+						fmt.Sprintf(
+							"%v *--* %v {label: \"%v\"}",
+							s.util.GetValueCount(s.options.TableNamePlural, checkingTable),
+							s.util.GetValueCount(s.options.TableNamePlural, currentTB),
+							fld,
+						),
+					)
 					fkPrefix = "+"
 				}
 			}
 
-			_, err = outputFile.WriteString(fmt.Sprintf("\t%v%v {label: \"%v\"}\n", fkPrefix, col.fieldName, col.fieldType))
+			_, err = outputFile.WriteString(
+				fmt.Sprintf(
+					"\t%v%v {label: \"%v\"}\n",
+					fkPrefix,
+					s.util.GetCaseOfString(fmt.Sprintf("%v", col.fieldName), s.options.ColumnNameCase),
+					col.fieldType,
+				),
+			)
 			if err != nil {
 				return err
 			}

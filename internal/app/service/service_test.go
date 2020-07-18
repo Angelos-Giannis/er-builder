@@ -6,14 +6,16 @@ import (
 	"testing"
 
 	"github.com/Angelos-Giannis/erbuilder/internal/app/service"
+	"github.com/Angelos-Giannis/erbuilder/internal/config"
 	"github.com/Angelos-Giannis/erbuilder/internal/domain"
+	"github.com/Angelos-Giannis/erbuilder/internal/pkg/util"
 	"github.com/udhos/equalfile"
 	"github.com/urfave/cli/v2"
 )
 
 func TestNew(t *testing.T) {
 	options := domain.Options{}
-	actualService := service.New(options)
+	actualService := service.New(options, util.New())
 
 	if reflect.TypeOf(&service.Service{}) != reflect.TypeOf(actualService) {
 		t.Errorf("Expected to get type '%v' but got '%v'.", reflect.TypeOf(&service.Service{}), reflect.TypeOf(actualService))
@@ -29,8 +31,11 @@ func TestGenerate(t *testing.T) {
 		OutputPath:     "./../../../test",
 		Tag:            "db",
 		Title:          "example_db",
+		ColumnNameCase: "snake_case",
+		TableNameCase:  "snake_case",
+		Config:         config.New(),
 	}
-	actualService := service.New(options)
+	actualService := service.New(options, util.New())
 
 	err := actualService.Generate()
 	if err != nil {

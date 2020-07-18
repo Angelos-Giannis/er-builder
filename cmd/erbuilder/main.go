@@ -7,6 +7,7 @@ import (
 	"github.com/Angelos-Giannis/erbuilder/internal/app/service"
 	"github.com/Angelos-Giannis/erbuilder/internal/config"
 	"github.com/Angelos-Giannis/erbuilder/internal/domain"
+	"github.com/Angelos-Giannis/erbuilder/internal/pkg/util"
 	"github.com/urfave/cli/v2"
 )
 
@@ -17,7 +18,7 @@ func Main() {
 	var app = cli.NewApp()
 	info(app, cfg)
 
-	var options domain.Options
+	options := domain.NewOptions(cfg)
 
 	app.Commands = []*cli.Command{
 		{
@@ -25,7 +26,7 @@ func Main() {
 			Aliases: []string{"g"},
 			Usage:   "Generate the .er file based on the provided structures.",
 			Flags: []cli.Flag{
-				options.GetCommonField(),
+				options.GetCommonFields(),
 				options.GetDirectoryFlag(),
 				options.GetFileList(),
 				options.GetIDField(),
@@ -33,9 +34,19 @@ func Main() {
 				options.GetOutputPath(),
 				options.GetTag(),
 				options.GetTitle(),
+				options.GetColumnNameCase(),
+				options.GetTableNameCase(),
+				options.GetTableNamePlural(),
 			},
 			Action: func(c *cli.Context) error {
-				srv := service.New(options)
+				err := options.Validate()
+				if err != nil {
+					panic(err)
+				}
+
+				util := util.New()
+
+				srv := service.New(options, util)
 				return srv.Generate()
 			},
 		},

@@ -1,16 +1,17 @@
 title {label: "example_db"}
+
 # Definition of tables.
-[PhoneNumber]
+[phone_number]
 	*id
 	+user_id {label: "int"}
 	mobile {label: "string"}
 	landline {label: "string"}
 
-[User]
+[user]
 	*id
 	first_name {label: "string"}
 	lastname {label: "string"}
 
 
 # Definition of foreign keys.
-phonenumber *--* user {label: "user_id"}
+phone_number *--* user {label: "user_id"}
