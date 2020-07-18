@@ -4,7 +4,7 @@
 ![golang-version](https://img.shields.io/badge/Go-1.14-blue)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![master-actions Actions Status](https://github.com/Angelos-Giannis/erbuilder/workflows/master-actions/badge.svg)](https://github.com/Angelos-Giannis/erbuilder/actions)
-[![GoDoc](https://godoc.org/github.com/gocarina/gocsv?status.png)](https://godoc.org/github.com/Angelos-Giannis/erbuilder)
+[![GoDoc](https://godoc.org/github.com/gocarina/gocsv?status.png)](https://pkg.go.dev/github.com/Angelos-Giannis/erbuilder)
 [![Go Report Card](https://goreportcard.com/badge/github.com/Angelos-Giannis/erbuilder)](https://goreportcard.com/report/github.com/Angelos-Giannis/erbuilder)
 
 The purpose of this tool is to parse a file or a list of files containing the mappping against the database and generate an `.er` file describing the database modeling.
