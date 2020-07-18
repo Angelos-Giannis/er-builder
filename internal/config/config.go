@@ -29,7 +29,7 @@ func New() Config {
 			},
 			Name:    "ErBuilder",
 			Usage:   "CLI tool to automatically generate a .er file including a list of model files",
-			Version: "0.1.0",
+			Version: "0.1.1",
 		},
 	}
 }

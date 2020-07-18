@@ -1,9 +1,0 @@
-version: "3.3"
-
-application:
-  authors:
-    - name: "Angelos Giannis"
-      email: "angelos.giannis@gmail.com"
-  name: "ER-Builder"
-  usage: "CLI tool to automatically generate a .er file including a list of model files"
-  version: "0.1.0"
