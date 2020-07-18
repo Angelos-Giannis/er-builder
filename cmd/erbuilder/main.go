@@ -1,7 +1,6 @@
-package main
+package cmd
 
 import (
-	"fmt"
 	"log"
 	"os"
 
@@ -11,17 +10,9 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
-const (
-	// define the configuration file for the system.
-	configurationFile = "configuration.yaml"
-)
-
-func main() {
-	cfg, err := config.New(configurationFile)
-	if err != nil {
-		fmt.Printf("Error parsing configuration : %v\n", err)
-		os.Exit(1)
-	}
+// Main actual main function.
+func Main() {
+	cfg := config.New()
 
 	var app = cli.NewApp()
 	info(app, cfg)
@@ -50,7 +41,7 @@ func main() {
 		},
 	}
 
-	err = app.Run(os.Args)
+	err := app.Run(os.Args)
 	if err != nil {
 		log.Fatal(err)
 	}

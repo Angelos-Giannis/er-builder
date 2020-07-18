@@ -1,11 +1,5 @@
 package config
 
-import (
-	"io/ioutil"
-
-	"gopkg.in/yaml.v2"
-)
-
 // Config describes the configuration of the service.
 type Config struct {
 	Application application `yaml:"application"`
@@ -24,18 +18,18 @@ type author struct {
 }
 
 // New creates and returns a configuration object for the service.
-func New(configFile string) (Config, error) {
-	var config Config
-
-	yamlBytes, err := ioutil.ReadFile(configFile)
-	if err != nil {
-		return Config{}, err
+func New() Config {
+	return Config{
+		Application: application{
+			Authors: []author{
+				{
+					Name:  "Angelos Giannis",
+					Email: "angelos.giannis@gmail.com",
+				},
+			},
+			Name:    "ErBuilder",
+			Usage:   "CLI tool to automatically generate a .er file including a list of model files",
+			Version: "0.1.0",
+		},
 	}
-
-	err = yaml.Unmarshal(yamlBytes, &config)
-	if err != nil {
-		return Config{}, err
-	}
-
-	return config, err
 }

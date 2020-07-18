@@ -14,7 +14,7 @@ The purpose of this tool is to parse a file or a list of files containing the ma
 In order to be able to use this you simply have to :
 
 ```shell
-go get github.com/Angelos-Giannis/erbuilder
+go get -u github.com/Angelos-Giannis/erbuilder
 ```
 
 ## Definition of commands
