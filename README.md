@@ -45,5 +45,11 @@ OPTIONS:
 To generate a new `.er` file with the database models, a command like the following needs to be executed :
 
 ```shell
-go run cmd/erbuilder/main.go generate --directory "./test/" --output_path "./test/" --output_filename "example-er-diagram" --id_field id --tag db --title example_db
+erbuilder generate --directory "./test/" --output_path "./test/" --output_filename "example-er-diagram" --id_field "id" --tag "db" --title "example_db"
+```
+
+or by using `go run` in the root folder of the project :
+
+```shell
+go run main.go generate --directory "./test/" --output_path "./test/" --output_filename "example-er-diagram" --id_field "id" --tag "db" --title "example_db"
 ```
