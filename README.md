@@ -1,9 +1,10 @@
 # erbuilder
 
-![version](https://img.shields.io/badge/version-v0.3.2-brightgreen)
+![version](https://img.shields.io/badge/version-v0.3.3-brightgreen)
 ![golang-version](https://img.shields.io/badge/Go-1.14-blue)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![master-actions Actions Status](https://github.com/Angelos-Giannis/erbuilder/workflows/master-actions/badge.svg)](https://github.com/Angelos-Giannis/erbuilder/actions)
+![.github/workflows/release-actions.yaml](https://github.com/Angelos-Giannis/erbuilder/workflows/.github/workflows/release-actions.yaml/badge.svg)
 [![GoDoc](https://godoc.org/github.com/Angelos-Giannis/erbuilder?status.png)](https://pkg.go.dev/github.com/Angelos-Giannis/erbuilder)
 [![Go Report Card](https://goreportcard.com/badge/github.com/Angelos-Giannis/erbuilder)](https://goreportcard.com/report/github.com/Angelos-Giannis/erbuilder)
 

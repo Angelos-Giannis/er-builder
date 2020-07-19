@@ -35,7 +35,7 @@ func New() Config {
 			},
 			Name:    "ErBuilder",
 			Usage:   "CLI tool to automatically generate a .er file including a list of model files",
-			Version: "0.3.2",
+			Version: "0.3.3",
 		},
 		Settings: settings{
 			AllowedColumnNameCaseValues: []string{"snake_case", "camelCase", "screaming_snake_case", "kebab_case"},
