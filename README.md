@@ -1,6 +1,6 @@
 # erbuilder
 
-![version](https://img.shields.io/badge/version-v0.3.3-brightgreen)
+![version](https://img.shields.io/badge/version-v0.3.5-brightgreen)
 ![golang-version](https://img.shields.io/badge/Go-1.14-blue)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![master-actions Actions Status](https://github.com/eujoy/erbuilder/workflows/master-actions/badge.svg)](https://github.com/eujoy/erbuilder/actions)
