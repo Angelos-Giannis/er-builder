@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/Angelos-Giannis/erbuilder/internal/config"
+	"github.com/eujoy/erbuilder/internal/config"
 
 	"github.com/urfave/cli/v2"
 )

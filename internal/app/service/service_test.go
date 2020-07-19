@@ -5,10 +5,10 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/Angelos-Giannis/erbuilder/internal/app/service"
-	"github.com/Angelos-Giannis/erbuilder/internal/config"
-	"github.com/Angelos-Giannis/erbuilder/internal/domain"
-	"github.com/Angelos-Giannis/erbuilder/internal/pkg/util"
+	"github.com/eujoy/erbuilder/internal/app/service"
+	"github.com/eujoy/erbuilder/internal/config"
+	"github.com/eujoy/erbuilder/internal/domain"
+	"github.com/eujoy/erbuilder/internal/pkg/util"
 	"github.com/udhos/equalfile"
 	"github.com/urfave/cli/v2"
 )

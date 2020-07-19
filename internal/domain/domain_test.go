@@ -6,8 +6,8 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/Angelos-Giannis/erbuilder/internal/config"
-	"github.com/Angelos-Giannis/erbuilder/internal/domain"
+	"github.com/eujoy/erbuilder/internal/config"
+	"github.com/eujoy/erbuilder/internal/domain"
 	"github.com/urfave/cli/v2"
 )
 

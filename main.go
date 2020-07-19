@@ -1,7 +1,7 @@
 package main
 
 import (
-	cmd "github.com/Angelos-Giannis/erbuilder/cmd/erbuilder"
+	cmd "github.com/eujoy/erbuilder/cmd/erbuilder"
 )
 
 func main() {

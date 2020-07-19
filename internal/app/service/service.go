@@ -14,7 +14,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/Angelos-Giannis/erbuilder/internal/domain"
+	"github.com/eujoy/erbuilder/internal/domain"
 )
 
 type util interface {

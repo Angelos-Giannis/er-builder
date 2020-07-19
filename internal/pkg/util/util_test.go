@@ -4,7 +4,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/Angelos-Giannis/erbuilder/internal/pkg/util"
+	"github.com/eujoy/erbuilder/internal/pkg/util"
 )
 
 func TestGetCaseOfString(t *testing.T) {

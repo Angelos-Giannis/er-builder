@@ -3,7 +3,7 @@ Package erbuilder reads across a list of files and after retrieving the structs 
 
 Installation can be done by running :
 
-	go get -u github.com/Angelos-Giannis/erbuilder
+	go get -u github.com/eujoy/erbuilder
 
 To use the tool and generate a .er file, the following command needs to be executed (change values accordingly) :
 
@@ -12,8 +12,8 @@ To use the tool and generate a .er file, the following command needs to be execu
 Also, this can be used as an external package in any service. To use this tool as part of your project, you need to do something like the following :
 
 	import (
-		"github.com/Angelos-Giannis/erbuilder/internal/app/service"
-		"github.com/Angelos-Giannis/erbuilder/internal/domain"
+		"github.com/eujoy/erbuilder/internal/app/service"
+		"github.com/eujoy/erbuilder/internal/domain"
 	)
 
 	// Config describes the configuration of the service.
@@ -51,6 +51,6 @@ Also, this can be used as an external package in any service. To use this tool a
 		_ = actualService.Generate()
 	}
 
-For more details, please visit : https://github.com/Angelos-Giannis/erbuilder.
+For more details, please visit : https://github.com/eujoy/erbuilder.
 */
 package main
