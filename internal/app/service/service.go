@@ -98,7 +98,7 @@ func (s *Service) writeToFile(tableMapping map[string][]column) error {
 	defer outputFile.Close()
 
 	if s.options.Title != "" {
-		_, err = outputFile.WriteString(fmt.Sprintf("title {label: \"%v\"}\n", s.options.Title))
+		_, err = outputFile.WriteString(fmt.Sprintf("title {label: \"%v\"}\n\n", s.options.Title))
 		if err != nil {
 			return err
 		}
@@ -112,11 +112,6 @@ func (s *Service) writeToFile(tableMapping map[string][]column) error {
 	}
 	sort.Strings(keys)
 
-	_, err = outputFile.WriteString("\n")
-	if err != nil {
-		return err
-	}
-
 	_, err = outputFile.WriteString("# Definition of tables.\n")
 	if err != nil {
 		return err
@@ -128,16 +123,6 @@ func (s *Service) writeToFile(tableMapping map[string][]column) error {
 			return err
 		}
 		foreignKeyConnections = append(foreignKeyConnections, fksForTable...)
-	}
-
-	_, err = outputFile.WriteString("\n")
-	if err != nil {
-		return err
-	}
-
-	_, err = outputFile.WriteString("# Definition of foreign keys.\n")
-	if err != nil {
-		return err
 	}
 
 	err = s.writeForeignKeys(outputFile, foreignKeyConnections)
@@ -244,8 +229,13 @@ func (s *Service) findForeignKeysForColumnsOfTable(tableMapping map[string][]col
 }
 
 func (s *Service) writeForeignKeys(outputFile *os.File, foreignKeyConnections []string) error {
+	_, err := outputFile.WriteString("\n# Definition of foreign keys.\n")
+	if err != nil {
+		return err
+	}
+
 	for _, fk := range foreignKeyConnections {
-		_, err := outputFile.WriteString(fmt.Sprintf("%v\n", fk))
+		_, err = outputFile.WriteString(fmt.Sprintf("%v\n", fk))
 		if err != nil {
 			return err
 		}
