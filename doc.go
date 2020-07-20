@@ -9,6 +9,11 @@ To use the tool and generate a .er file, the following command needs to be execu
 
 	erbuilder generate --directory "./test/" --output_path "./test/" --output_filename "example-er-diagram" --id_field "id" --tag "db" --title "example_db"
 
+To install and use via homebrew, simply use the following commands :
+
+	brew tap eujoy/erbuilder
+	brew install erbuilder
+
 Also, this can be used as an external package in any service. To use this tool as part of your project, you need to do something like the following :
 
 	import (

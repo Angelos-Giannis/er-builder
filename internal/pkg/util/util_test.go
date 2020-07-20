@@ -1,6 +1,7 @@
 package util_test
 
 import (
+	"fmt"
 	"reflect"
 	"testing"
 
@@ -125,6 +126,52 @@ func TestGetValueCount(t *testing.T) {
 			actualOutput := utility.GetValueCount(tc.inputToPlural, tc.inputInitialValue)
 			if !reflect.DeepEqual(tc.expectedOutput, actualOutput) {
 				t.Errorf("Expected to get '%v' as response but got '%v'.", tc.expectedOutput, actualOutput)
+			}
+		})
+	}
+}
+
+func TestGetDBDataTypeFromCodeDataType(t *testing.T) {
+	type testCaseDetails struct {
+		inputValue     string
+		expectedOutput string
+	}
+	testCases := make(map[string]testCaseDetails)
+
+	dataTypes := map[string]string{
+		"bool":        "tinyint",
+		"byte":        "integer",
+		"uint":        "integer",
+		"uint8":       "integer",
+		"uint16":      "integer",
+		"uint32":      "integer",
+		"uint64":      "integer",
+		"uintptr":     "integer",
+		"rune":        "integer",
+		"int":         "integer",
+		"int8":        "integer",
+		"int16":       "integer",
+		"int32":       "integer",
+		"int64":       "integer",
+		"float32":     "float",
+		"float64":     "float",
+		"complex64":   "float",
+		"complex128":  "float",
+		"string":      "varchar",
+		"time":        "datetime",
+		"random_type": "~",
+	}
+
+	for in, out := range dataTypes {
+		testCases[fmt.Sprintf("Get db data type of '%v' from code.", in)] = testCaseDetails{inputValue: in, expectedOutput: out}
+	}
+
+	utility := util.New()
+	for name, tc := range testCases {
+		t.Run(name, func(t *testing.T) {
+			actualOutput := utility.GetDBDataTypeFromCodeDataType(tc.inputValue)
+			if !reflect.DeepEqual(tc.expectedOutput, actualOutput) {
+				t.Errorf("Expected to get '%v' as result but got '%v'.", tc.expectedOutput, actualOutput)
 			}
 		})
 	}

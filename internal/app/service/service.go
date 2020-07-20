@@ -20,6 +20,7 @@ import (
 type util interface {
 	GetCaseOfString(initialValue, convertToCase string) string
 	GetValueCount(isPlural bool, initialValue string) string
+	GetDBDataTypeFromCodeDataType(dataType string) string
 }
 
 // Service describes the service flow.
@@ -122,84 +123,147 @@ func (s *Service) writeToFile(tableMapping map[string][]column) error {
 	}
 
 	for _, tb := range keys {
-		checkingTable := fmt.Sprintf("%v", tb)
-		if len(tableMapping[tb]) == 0 {
-			continue
-		}
-
-		tableName := s.util.GetCaseOfString(tb, s.options.TableNameCase)
-		_, err = outputFile.WriteString(fmt.Sprintf("[%v]\n", s.util.GetValueCount(s.options.TableNamePlural, tableName)))
+		fksForTable, err := s.writeERDetailsAndGetForeignKeys(outputFile, tableMapping, tb)
 		if err != nil {
 			return err
 		}
-
-		if s.options.IDField != "" {
-			_, err = outputFile.WriteString(fmt.Sprintf("\t*%v\n", s.options.IDField))
-			if err != nil {
-				return err
-			}
-		}
-
-		for _, col := range tableMapping[tb] {
-			fkPrefix := ""
-			for intTB := range tableMapping {
-				fld := s.util.GetCaseOfString(fmt.Sprintf("%v", col.fieldName), s.options.ColumnNameCase)
-				currentTB := s.util.GetCaseOfString(fmt.Sprintf("%v", intTB), s.options.TableNameCase)
-
-				if strings.Contains(fld, currentTB) || strings.Contains(fld, s.util.GetValueCount(s.options.TableNamePlural, currentTB)) {
-					checkingTable = s.util.GetCaseOfString(checkingTable, s.options.TableNameCase)
-					foreignKeyConnections = append(
-						foreignKeyConnections,
-						fmt.Sprintf(
-							"%v *--* %v {label: \"%v\"}",
-							s.util.GetValueCount(s.options.TableNamePlural, checkingTable),
-							s.util.GetValueCount(s.options.TableNamePlural, currentTB),
-							fld,
-						),
-					)
-					fkPrefix = "+"
-				}
-			}
-
-			_, err = outputFile.WriteString(
-				fmt.Sprintf(
-					"\t%v%v {label: \"%v\"}\n",
-					fkPrefix,
-					s.util.GetCaseOfString(fmt.Sprintf("%v", col.fieldName), s.options.ColumnNameCase),
-					col.fieldType,
-				),
-			)
-			if err != nil {
-				return err
-			}
-		}
-
-		for _, c := range s.options.CommonFields.Value() {
-			_, err = outputFile.WriteString(fmt.Sprintf("\t%v%v\n", "", c))
-			if err != nil {
-				return err
-			}
-		}
-		_, err = outputFile.WriteString("\n")
-		if err != nil {
-			return err
-		}
+		foreignKeyConnections = append(foreignKeyConnections, fksForTable...)
 	}
 
 	_, err = outputFile.WriteString("\n")
 	if err != nil {
 		return err
 	}
+
 	_, err = outputFile.WriteString("# Definition of foreign keys.\n")
 	if err != nil {
 		return err
 	}
 
+	err = s.writeForeignKeys(outputFile, foreignKeyConnections)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// writeERDetailsAndGetForeignKeys writes all the details of a table and returns all it's foreign key connections.
+func (s *Service) writeERDetailsAndGetForeignKeys(
+	outputFile *os.File,
+	tableMapping map[string][]column,
+	tableName string,
+) ([]string, error) {
+	if len(tableMapping[tableName]) == 0 {
+		return []string{}, nil
+	}
+	checkingTable := fmt.Sprintf("%v", tableName)
+
+	fixedTableName := s.util.GetCaseOfString(tableName, s.options.TableNameCase)
+	_, err := outputFile.WriteString(fmt.Sprintf("[%v]\n", s.util.GetValueCount(s.options.TableNamePlural, fixedTableName)))
+	if err != nil {
+		return []string{}, err
+	}
+
+	if s.options.IDField != "" {
+		_, err = outputFile.WriteString(fmt.Sprintf("\t*%v\n", s.options.IDField))
+		if err != nil {
+			return []string{}, err
+		}
+	}
+
+	fksForTable, err := s.writeFieldsForTableAndGetForeignKeys(outputFile, tableMapping, tableMapping[tableName], checkingTable)
+	if err != nil {
+		return []string{}, err
+	}
+
+	err = s.writeExtraCommonFields(outputFile)
+	if err != nil {
+		return []string{}, err
+	}
+
+	return fksForTable, nil
+}
+
+// writeFieldsForTableAndGetForeignKeys writes the columns of a table in the file and
+// retrieves and returns the foreign key connections for that table.
+func (s *Service) writeFieldsForTableAndGetForeignKeys(
+	outputFile *os.File,
+	tableMapping map[string][]column,
+	tableColumns []column,
+	checkingTable string,
+) ([]string, error) {
+	var foreignKeyConnections []string
+	for _, col := range tableColumns {
+		fksForColumn := s.findForeignKeysForColumnsOfTable(tableMapping, col, checkingTable)
+		fkPrefix := ""
+		if len(fksForColumn) > 0 {
+			fkPrefix = "+"
+		}
+		foreignKeyConnections = append(foreignKeyConnections, fksForColumn...)
+
+		_, err := outputFile.WriteString(
+			fmt.Sprintf(
+				"\t%v%v {label: \"%v\"}\n",
+				fkPrefix,
+				s.util.GetCaseOfString(fmt.Sprintf("%v", col.fieldName), s.options.ColumnNameCase),
+				s.util.GetDBDataTypeFromCodeDataType(fmt.Sprintf("%v", col.fieldType)),
+			),
+		)
+		if err != nil {
+			return []string{}, err
+		}
+	}
+
+	return foreignKeyConnections, nil
+}
+
+// findForeignKeysForColumnsOfTable finds and returns the foreign key connections of a column.
+func (s *Service) findForeignKeysForColumnsOfTable(tableMapping map[string][]column, col column, table string) []string {
+	var foreignKeyConnections []string
+
+	for intTB := range tableMapping {
+		fld := s.util.GetCaseOfString(fmt.Sprintf("%v", col.fieldName), s.options.ColumnNameCase)
+		currentTB := s.util.GetCaseOfString(fmt.Sprintf("%v", intTB), s.options.TableNameCase)
+
+		if strings.Contains(fld, currentTB) || strings.Contains(fld, s.util.GetValueCount(s.options.TableNamePlural, currentTB)) {
+			checkingTable := s.util.GetCaseOfString(table, s.options.TableNameCase)
+			foreignKeyConnections = append(
+				foreignKeyConnections,
+				fmt.Sprintf(
+					"%v *--* %v {label: \"%v\"}",
+					s.util.GetValueCount(s.options.TableNamePlural, checkingTable),
+					s.util.GetValueCount(s.options.TableNamePlural, currentTB),
+					fld,
+				),
+			)
+		}
+	}
+
+	return foreignKeyConnections
+}
+
+func (s *Service) writeForeignKeys(outputFile *os.File, foreignKeyConnections []string) error {
 	for _, fk := range foreignKeyConnections {
-		_, err = outputFile.WriteString(fmt.Sprintf("%v\n", fk))
+		_, err := outputFile.WriteString(fmt.Sprintf("%v\n", fk))
 		if err != nil {
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (s *Service) writeExtraCommonFields(outputFile *os.File) error {
+	for _, c := range s.options.CommonFields.Value() {
+		_, err := outputFile.WriteString(fmt.Sprintf("\t%v%v\n", "", c))
+		if err != nil {
+			return err
+		}
+	}
+	_, err := outputFile.WriteString("\n")
+	if err != nil {
+		return err
 	}
 
 	return nil

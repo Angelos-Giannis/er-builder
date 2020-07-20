@@ -3,14 +3,14 @@ title {label: "example_db"}
 # Definition of tables.
 [phone_number]
 	*id
-	+user_id {label: "int"}
-	mobile {label: "string"}
-	landline {label: "string"}
+	+user_id {label: "integer"}
+	mobile {label: "varchar"}
+	landline {label: "varchar"}
 
 [user]
 	*id
-	first_name {label: "string"}
-	lastname {label: "string"}
+	first_name {label: "varchar"}
+	lastname {label: "varchar"}
 
 
 # Definition of foreign keys.

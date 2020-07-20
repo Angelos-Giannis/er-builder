@@ -1,6 +1,8 @@
 package util
 
 import (
+	"strings"
+
 	pluralize "github.com/gertd/go-pluralize"
 	"github.com/iancoleman/strcase"
 )
@@ -40,4 +42,26 @@ func (u *Util) GetValueCount(toPlural bool, initialValue string) string {
 	}
 
 	return u.pluralize.Singular(initialValue)
+}
+
+// GetDBDataTypeFromCodeDataType returns a database related data type based on the data type in the code provided.
+func (u *Util) GetDBDataTypeFromCodeDataType(dataType string) string {
+	if strings.Contains(dataType, "time") {
+		return "datetime"
+	}
+
+	switch dataType {
+	case "bool":
+		return "tinyint"
+	case "byte", "uint", "uint8", "uint16", "uint32", "uint64", "uintptr":
+		return "integer"
+	case "rune", "int", "int8", "int16", "int32", "int64":
+		return "integer"
+	case "float32", "float64", "complex64", "complex128":
+		return "float"
+	case "string":
+		return "varchar"
+	default:
+		return "~"
+	}
 }
