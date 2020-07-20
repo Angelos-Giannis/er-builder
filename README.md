@@ -1,12 +1,16 @@
 # erbuilder
 
+[![GoDoc](https://godoc.org/github.com/eujoy/erbuilder?status.png)](https://pkg.go.dev/github.com/eujoy/erbuilder)
 ![version](https://img.shields.io/badge/version-v0.4.0-brightgreen)
 ![golang-version](https://img.shields.io/badge/Go-1.14-blue)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+
+----
+
+[![Go Report Card](https://goreportcard.com/badge/github.com/eujoy/erbuilder)](https://goreportcard.com/report/github.com/eujoy/erbuilder)
+[![Codacy Badge](https://app.codacy.com/project/badge/Grade/0c302dec02df4805ba27c9eda331ef98)](https://www.codacy.com/manual/eujoy/erbuilder?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=eujoy/erbuilder&amp;utm_campaign=Badge_Grade)
 [![master-actions Actions Status](https://github.com/eujoy/erbuilder/workflows/master-actions/badge.svg)](https://github.com/eujoy/erbuilder/actions)
 ![.github/workflows/release-actions.yaml](https://github.com/eujoy/erbuilder/workflows/.github/workflows/release-actions.yaml/badge.svg)
-[![GoDoc](https://godoc.org/github.com/eujoy/erbuilder?status.png)](https://pkg.go.dev/github.com/eujoy/erbuilder)
-[![Go Report Card](https://goreportcard.com/badge/github.com/eujoy/erbuilder)](https://goreportcard.com/report/github.com/eujoy/erbuilder)
 
 The purpose of this tool is to parse a file or a list of files containing the mappping against the database and generate an `.er` file describing the database modeling.
 
