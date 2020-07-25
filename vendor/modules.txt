@@ -10,6 +10,8 @@ github.com/iancoleman/strcase
 ## explicit
 # github.com/russross/blackfriday/v2 v2.0.1
 github.com/russross/blackfriday/v2
+# github.com/schrej/godacov v0.0.0-20191017093636-565cfab00b51
+## explicit
 # github.com/shurcooL/sanitized_anchor_name v1.0.0
 github.com/shurcooL/sanitized_anchor_name
 # github.com/udhos/equalfile v0.3.0
