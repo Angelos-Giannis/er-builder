@@ -7,11 +7,9 @@ import (
 	"go/token"
 	"io/ioutil"
 	"log"
-	"os"
 	"path/filepath"
 	"reflect"
 	"regexp"
-	"sort"
 	"strings"
 
 	"github.com/eujoy/erbuilder/internal/domain"
@@ -23,32 +21,30 @@ type util interface {
 	GetDBDataTypeFromCodeDataType(dataType string) string
 }
 
+type writer interface {
+	WriteFile(diagram domain.Diagram) error
+}
+
 // Service describes the service flow.
 type Service struct {
 	options domain.Options
 	util    util
-}
-
-type column struct {
-	fieldName interface{}
-	fieldType interface{}
-	// fieldLabel interface{}
+	writer  writer
 }
 
 // New creates and returns a new service.
-func New(options domain.Options, util util) *Service {
+func New(options domain.Options, util util, writer writer) *Service {
 	return &Service{
 		options: options,
 		util:    util,
+		writer:  writer,
 	}
 }
 
 // Generate performs the action to generate the .er file based on the provided input.
 func (s *Service) Generate() error {
 	filesToParse := defineFilesToParse(s.options.Directory, s.options.FileList.Value())
-	tagRegexp := getTagRegexp(s.options.Tag)
-
-	tableMapping := make(map[string][]column)
+	diagram := domain.Diagram{Title: s.options.Title}
 
 	for _, fl := range filesToParse {
 		fset := token.NewFileSet()
@@ -57,206 +53,149 @@ func (s *Service) Generate() error {
 			return err
 		}
 
-		for i := 0; i < len(node.Decls); i++ {
-			if reflect.TypeOf(node.Decls[i]) != reflect.TypeOf(&ast.GenDecl{}) {
+		diagram.TableList = append(diagram.TableList, s.getAllTables(node.Decls)...)
+	}
+
+	s.enrichForeignKeyReferences(&diagram)
+
+	err := s.writer.WriteFile(diagram)
+	if err != nil {
+		return err
+	}
+
+	return nil
+
+}
+
+// getAllTables retrieves and returns all the table definitions with their columns.
+func (s *Service) getAllTables(declarations []ast.Decl) []domain.Table {
+	var tableList []domain.Table
+	for i := 0; i < len(declarations); i++ {
+		if reflect.TypeOf(declarations[i]) != reflect.TypeOf(&ast.GenDecl{}) {
+			continue
+		}
+		typeDecl := declarations[i].(*ast.GenDecl)
+
+		tableDefinition, found := s.getTableDefinition(typeDecl.Specs)
+		if found {
+			tableList = append(tableList, tableDefinition)
+		}
+	}
+
+	return tableList
+}
+
+// getTableDefinition retrieves the definition of a table alongside with it's columns and returns it.
+func (s *Service) getTableDefinition(typeSpec []ast.Spec) (domain.Table, bool) {
+	var tableDetails domain.Table
+	tagRegexp := getTagRegexp(s.options.Tag)
+
+	if reflect.TypeOf(typeSpec[0]) != reflect.TypeOf(&ast.TypeSpec{}) {
+		return tableDetails, false
+	}
+
+	if reflect.TypeOf(typeSpec[0].(*ast.TypeSpec).Type) != reflect.TypeOf(&ast.StructType{}) {
+		return tableDetails, false
+	}
+
+	structDecl := typeSpec[0].(*ast.TypeSpec).Type.(*ast.StructType)
+	structName := fmt.Sprintf("%v", typeSpec[0].(*ast.TypeSpec).Name)
+
+	tableDetails = domain.Table{
+		Name:       s.util.GetCaseOfString(structName, s.options.TableNameCase),
+		ColumnList: s.getTagFieldsFromStruct(tagRegexp, structDecl.Fields.List),
+	}
+
+	return tableDetails, true
+}
+
+// getTagFieldsFromStruct retrieves and returns the values that exist on a respective tag.
+func (s *Service) getTagFieldsFromStruct(tagRegexp *regexp.Regexp, fields []*ast.Field) []domain.Column {
+	var columns []domain.Column
+	pkFound := false
+	for _, field := range fields {
+		columnName := ""
+		if field.Tag != nil && len(field.Tag.Value) > 0 {
+			match := tagRegexp.FindStringSubmatch(field.Tag.Value)
+			if len(match) < 2 {
 				continue
 			}
-			typeDecl := node.Decls[i].(*ast.GenDecl)
 
-			for j := 0; j < len(typeDecl.Specs); j++ {
-				if reflect.TypeOf(typeDecl.Specs[j]) != reflect.TypeOf(&ast.TypeSpec{}) {
-					continue
+			columnName = match[1]
+		}
+
+		if len(columnName) == 0 {
+			continue
+		}
+
+		newCol := domain.Column{
+			Name:         columnName,
+			Type:         s.util.GetDBDataTypeFromCodeDataType(fmt.Sprintf("%v", field.Type)),
+			IsPrimaryKey: (s.options.IDField == columnName),
+			IsForeignKey: false,
+			IsExtraField: false,
+		}
+		columns = append(columns, newCol)
+		pkFound = (pkFound || newCol.IsPrimaryKey)
+	}
+
+	if !pkFound {
+		pkColumn := domain.Column{
+			Name:         s.options.IDField,
+			Type:         "integer",
+			IsPrimaryKey: true,
+			IsForeignKey: false,
+			IsExtraField: false,
+		}
+		columns = append(columns, pkColumn)
+	}
+
+	if len(s.options.CommonFields.Value()) > 0 {
+		for _, commonField := range s.options.CommonFields.Value() {
+			extraColumn := domain.Column{
+				Name:         commonField,
+				Type:         "",
+				IsPrimaryKey: false,
+				IsForeignKey: false,
+				IsExtraField: true,
+			}
+			columns = append(columns, extraColumn)
+		}
+	}
+
+	return columns
+}
+
+// enrichForeignKeyReferences enriches the references between tables in the diagram.
+func (s *Service) enrichForeignKeyReferences(diagram *domain.Diagram) {
+	for idx := range diagram.TableList {
+		diagram.ReferenceList = append(diagram.ReferenceList, s.getReferencesToTable(diagram, diagram.TableList[idx].Name)...)
+	}
+}
+
+// getReferencesToTable finds and returns a list of all the references to a table.
+func (s *Service) getReferencesToTable(diagram *domain.Diagram, searchForTable string) []domain.Reference {
+	var referenceList []domain.Reference
+	for idxTb := range diagram.TableList {
+		if diagram.TableList[idxTb].Name == searchForTable {
+			continue
+		}
+
+		for idxCol := range diagram.TableList[idxTb].ColumnList {
+			if strings.Contains(diagram.TableList[idxTb].ColumnList[idxCol].Name, searchForTable) || strings.Contains(diagram.TableList[idxTb].ColumnList[idxCol].Name, s.util.GetValueCount(s.options.TableNamePlural, searchForTable)) {
+				newReference := domain.Reference{
+					FromTableName:   diagram.TableList[idxTb].Name,
+					FromTableColumn: diagram.TableList[idxTb].ColumnList[idxCol].Name,
+					ToTableName:     searchForTable,
+					TypeOfReference: "*--*",
 				}
-
-				if reflect.TypeOf(typeDecl.Specs[j].(*ast.TypeSpec).Type) != reflect.TypeOf(&ast.StructType{}) {
-					continue
-				}
-
-				structDecl := typeDecl.Specs[j].(*ast.TypeSpec).Type.(*ast.StructType)
-				structName := fmt.Sprintf("%v", typeDecl.Specs[j].(*ast.TypeSpec).Name)
-
-				tableMapping[structName] = getTagFieldsFromStruct(tagRegexp, structDecl.Fields.List)
+				referenceList = append(referenceList, newReference)
+				diagram.TableList[idxTb].ColumnList[idxCol].IsForeignKey = true
 			}
 		}
 	}
 
-	err := s.writeToFile(tableMapping)
-	if err != nil {
-		return err
-	}
-
-	return nil
-
-}
-
-// writeToFile creates the .er file and writes all the details in there.
-func (s *Service) writeToFile(tableMapping map[string][]column) error {
-	outputFile, err := os.Create(fmt.Sprintf("%v/%v.er", s.options.OutputPath, s.options.OutputFilename))
-	if err != nil {
-		return err
-	}
-	defer outputFile.Close()
-
-	if s.options.Title != "" {
-		_, err = outputFile.WriteString(fmt.Sprintf("title {label: \"%v\"}\n\n", s.options.Title))
-		if err != nil {
-			return err
-		}
-	}
-
-	var foreignKeyConnections []string
-
-	keys := make([]string, 0, len(tableMapping))
-	for k := range tableMapping {
-		keys = append(keys, k)
-	}
-	sort.Strings(keys)
-
-	_, err = outputFile.WriteString("# Definition of tables.\n")
-	if err != nil {
-		return err
-	}
-
-	for _, tb := range keys {
-		fksForTable, err := s.writeERDetailsAndGetForeignKeys(outputFile, tableMapping, tb)
-		if err != nil {
-			return err
-		}
-		foreignKeyConnections = append(foreignKeyConnections, fksForTable...)
-	}
-
-	err = s.writeForeignKeys(outputFile, foreignKeyConnections)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// writeERDetailsAndGetForeignKeys writes all the details of a table and returns all it's foreign key connections.
-func (s *Service) writeERDetailsAndGetForeignKeys(
-	outputFile *os.File,
-	tableMapping map[string][]column,
-	tableName string,
-) ([]string, error) {
-	if len(tableMapping[tableName]) == 0 {
-		return []string{}, nil
-	}
-	checkingTable := fmt.Sprintf("%v", tableName)
-
-	fixedTableName := s.util.GetCaseOfString(tableName, s.options.TableNameCase)
-	_, err := outputFile.WriteString(fmt.Sprintf("[%v]\n", s.util.GetValueCount(s.options.TableNamePlural, fixedTableName)))
-	if err != nil {
-		return []string{}, err
-	}
-
-	if s.options.IDField != "" {
-		_, err = outputFile.WriteString(fmt.Sprintf("\t*%v\n", s.options.IDField))
-		if err != nil {
-			return []string{}, err
-		}
-	}
-
-	fksForTable, err := s.writeFieldsForTableAndGetForeignKeys(outputFile, tableMapping, tableMapping[tableName], checkingTable)
-	if err != nil {
-		return []string{}, err
-	}
-
-	err = s.writeExtraCommonFields(outputFile)
-	if err != nil {
-		return []string{}, err
-	}
-
-	return fksForTable, nil
-}
-
-// writeFieldsForTableAndGetForeignKeys writes the columns of a table in the file and
-// retrieves and returns the foreign key connections for that table.
-func (s *Service) writeFieldsForTableAndGetForeignKeys(
-	outputFile *os.File,
-	tableMapping map[string][]column,
-	tableColumns []column,
-	checkingTable string,
-) ([]string, error) {
-	var foreignKeyConnections []string
-	for _, col := range tableColumns {
-		fksForColumn := s.findForeignKeysForColumnsOfTable(tableMapping, col, checkingTable)
-		fkPrefix := ""
-		if len(fksForColumn) > 0 {
-			fkPrefix = "+"
-		}
-		foreignKeyConnections = append(foreignKeyConnections, fksForColumn...)
-
-		_, err := outputFile.WriteString(
-			fmt.Sprintf(
-				"\t%v%v {label: \"%v\"}\n",
-				fkPrefix,
-				s.util.GetCaseOfString(fmt.Sprintf("%v", col.fieldName), s.options.ColumnNameCase),
-				s.util.GetDBDataTypeFromCodeDataType(fmt.Sprintf("%v", col.fieldType)),
-			),
-		)
-		if err != nil {
-			return []string{}, err
-		}
-	}
-
-	return foreignKeyConnections, nil
-}
-
-// findForeignKeysForColumnsOfTable finds and returns the foreign key connections of a column.
-func (s *Service) findForeignKeysForColumnsOfTable(tableMapping map[string][]column, col column, table string) []string {
-	var foreignKeyConnections []string
-
-	for intTB := range tableMapping {
-		fld := s.util.GetCaseOfString(fmt.Sprintf("%v", col.fieldName), s.options.ColumnNameCase)
-		currentTB := s.util.GetCaseOfString(fmt.Sprintf("%v", intTB), s.options.TableNameCase)
-
-		if strings.Contains(fld, currentTB) || strings.Contains(fld, s.util.GetValueCount(s.options.TableNamePlural, currentTB)) {
-			checkingTable := s.util.GetCaseOfString(table, s.options.TableNameCase)
-			foreignKeyConnections = append(
-				foreignKeyConnections,
-				fmt.Sprintf(
-					"%v *--* %v {label: \"%v\"}",
-					s.util.GetValueCount(s.options.TableNamePlural, checkingTable),
-					s.util.GetValueCount(s.options.TableNamePlural, currentTB),
-					fld,
-				),
-			)
-		}
-	}
-
-	return foreignKeyConnections
-}
-
-func (s *Service) writeForeignKeys(outputFile *os.File, foreignKeyConnections []string) error {
-	_, err := outputFile.WriteString("\n# Definition of foreign keys.\n")
-	if err != nil {
-		return err
-	}
-
-	for _, fk := range foreignKeyConnections {
-		_, err = outputFile.WriteString(fmt.Sprintf("%v\n", fk))
-		if err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-func (s *Service) writeExtraCommonFields(outputFile *os.File) error {
-	for _, c := range s.options.CommonFields.Value() {
-		_, err := outputFile.WriteString(fmt.Sprintf("\t%v%v\n", "", c))
-		if err != nil {
-			return err
-		}
-	}
-	_, err := outputFile.WriteString("\n")
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return referenceList
 }
 
 // defineFilesToParse prepares and returns the list of files that the service need to parse.
@@ -289,24 +228,4 @@ func defineFilesToParse(directory string, filesList []string) []string {
 // getTagRegex prepares and returns the regexp for getting the value of a tag.
 func getTagRegexp(tag string) *regexp.Regexp {
 	return regexp.MustCompile(fmt.Sprintf("%v:\"(.*?)\"", tag))
-}
-
-// getTagFieldsFromStruct retrieves and returns the values that exist on a respective tag.
-func getTagFieldsFromStruct(tagRegexp *regexp.Regexp, fields []*ast.Field) []column {
-	var cols []column
-	for _, field := range fields {
-		match := tagRegexp.FindStringSubmatch(field.Tag.Value)
-
-		if len(match) == 0 {
-			continue
-		}
-
-		newCol := column{
-			fieldName: match[1],
-			fieldType: field.Type,
-		}
-		cols = append(cols, newCol)
-	}
-
-	return cols
 }
