@@ -8,6 +8,7 @@ import (
 	"github.com/eujoy/erbuilder/internal/config"
 	"github.com/eujoy/erbuilder/internal/domain"
 	"github.com/eujoy/erbuilder/internal/pkg/util"
+	"github.com/eujoy/erbuilder/internal/pkg/writer"
 	"github.com/urfave/cli/v2"
 )
 
@@ -45,8 +46,9 @@ func Main() {
 				}
 
 				util := util.New()
+				writer := writer.New(util, options.OutputPath, options.OutputFilename)
 
-				srv := service.New(options, util)
+				srv := service.New(options, util, writer)
 				return srv.Generate()
 			},
 		},

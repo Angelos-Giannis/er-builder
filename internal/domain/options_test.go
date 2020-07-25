@@ -11,6 +11,15 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
+func TestNewOptions(t *testing.T) {
+	expectedOptions := domain.Options{}
+	actualOptions := domain.NewOptions(config.New())
+
+	if reflect.TypeOf(expectedOptions) != reflect.TypeOf(actualOptions) {
+		t.Errorf("Expected to get type '%v' but got '%v'.", reflect.TypeOf(expectedOptions), reflect.TypeOf(actualOptions))
+	}
+}
+
 func TestValidate(t *testing.T) {
 	cfg := config.New()
 
