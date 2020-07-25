@@ -25,7 +25,10 @@ func TestNew(t *testing.T) {
 
 func TestGenerate(t *testing.T) {
 	fileListStringSlice := cli.StringSlice{}
-	fileListStringSlice.Set("./../../../test/example.go")
+	err := fileListStringSlice.Set("./../../../test/example.go")
+	if err != nil {
+		t.Errorf("Expected to get nil as error but got '%v'.", err)
+	}
 
 	options := domain.Options{
 		Directory:      "",
@@ -41,7 +44,7 @@ func TestGenerate(t *testing.T) {
 	}
 	actualService := service.New(options, util.New(), writer.New(util.New(), options.OutputPath, options.OutputFilename))
 
-	err := actualService.Generate()
+	err = actualService.Generate()
 	if err != nil {
 		t.Errorf("Expected to get nil as error but got '%v'.", err)
 	}

@@ -26,7 +26,10 @@ func TestWriteFile(t *testing.T) {
 	diagram := dataBuilder.GetWriterTestDiagram()
 
 	writer := writer.New(util.New(), "./../../../test", "test-writer-example-er-diagram")
-	writer.WriteFile(diagram)
+	err := writer.WriteFile(diagram)
+	if err != nil {
+		t.Errorf("Expected to get nil as error but got '%v'.", err)
+	}
 
 	cmp := equalfile.New(nil, equalfile.Options{})
 	equal, err := cmp.CompareFile("./../../../test/example-er-diagram.er", "./../../../test/test-writer-example-er-diagram.er")
