@@ -1,5 +1,6 @@
 # erbuilder
 
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/256c65d68d4d48989204f85f1649753d)](https://app.codacy.com/manual/eujoy/erbuilder?utm_source=github.com&utm_medium=referral&utm_content=eujoy/erbuilder&utm_campaign=Badge_Grade_Settings)
 [![GoDoc](https://godoc.org/github.com/eujoy/erbuilder?status.png)](https://pkg.go.dev/github.com/eujoy/erbuilder)
 ![version](https://img.shields.io/badge/version-v0.5.0-brightgreen)
 ![golang-version](https://img.shields.io/badge/Go-1.14-blue)
