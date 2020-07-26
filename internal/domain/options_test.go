@@ -8,7 +8,7 @@ import (
 
 	"github.com/eujoy/erbuilder/internal/config"
 	"github.com/eujoy/erbuilder/internal/domain"
-	"github.com/eujoy/erbuilder/test"
+	test "github.com/eujoy/erbuilder/test/builder"
 )
 
 func TestNewOptions(t *testing.T) {

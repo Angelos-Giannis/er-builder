@@ -24,15 +24,7 @@ func TestNew(t *testing.T) {
 }
 
 func TestGenerate(t *testing.T) {
-	fileListStringSlice := cli.StringSlice{}
-	err := fileListStringSlice.Set("./../../../test/example.go")
-	if err != nil {
-		t.Errorf("Expected to get nil as error but got '%v'.", err)
-	}
-
 	options := domain.Options{
-		Directory:      "",
-		FileList:       fileListStringSlice,
 		IDField:        "id",
 		OutputFilename: "test-example-er-diagram",
 		OutputPath:     "./../../../test",
@@ -42,9 +34,40 @@ func TestGenerate(t *testing.T) {
 		TableNameCase:  "snake_case",
 		Config:         config.New(),
 	}
-	actualService := service.New(options, util.New(), writer.New(util.New(), options.OutputPath, options.OutputFilename))
 
-	err = actualService.Generate()
+	testCases := map[string]struct {
+		providedOptions domain.Options
+	}{
+		"Generate .er file based on a list of provided files": {
+			providedOptions: func() domain.Options {
+				fileListStringSlice := cli.StringSlice{}
+				err := fileListStringSlice.Set("./../../../test/example.go")
+				if err != nil {
+					t.Errorf("Expected to get nil as error but got '%v'.", err)
+				}
+
+				options.FileList = fileListStringSlice
+				return options
+			}(),
+		},
+		"Generate .er file based on a directory provided": {
+			providedOptions: func() domain.Options {
+				options.Directory = "./../../../test"
+				return options
+			}(),
+		},
+	}
+
+	for name, tc := range testCases {
+		t.Run(name, func(t *testing.T) {
+			actualService := service.New(tc.providedOptions, util.New(), writer.New(util.New(), tc.providedOptions.OutputPath, tc.providedOptions.OutputFilename))
+			validateGenerateExecution(t, actualService)
+		})
+	}
+}
+
+func validateGenerateExecution(t *testing.T, actualService *service.Service) {
+	err := actualService.Generate()
 	if err != nil {
 		t.Errorf("Expected to get nil as error but got '%v'.", err)
 	}

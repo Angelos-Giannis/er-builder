@@ -10,7 +10,7 @@ import (
 	"github.com/eujoy/erbuilder/internal/app/service"
 	"github.com/eujoy/erbuilder/internal/pkg/util"
 	"github.com/eujoy/erbuilder/internal/pkg/writer"
-	"github.com/eujoy/erbuilder/test"
+	test "github.com/eujoy/erbuilder/test/builder"
 )
 
 func TestNewWriter(t *testing.T) {
