@@ -1,7 +1,9 @@
 package test
 
 import (
+	"github.com/eujoy/erbuilder/internal/config"
 	"github.com/eujoy/erbuilder/internal/domain"
+	"github.com/urfave/cli/v2"
 )
 
 // DataBuilder describes the data builder being used for the tests.
@@ -163,5 +165,21 @@ func (d *DataBuilder) GetWriterTestDiagram() domain.Diagram {
 				TypeOfReference: "*--*",
 			},
 		},
+	}
+}
+
+// GetOptionsForOptionTest returns a list of options for the option_test file.
+func (d *DataBuilder) GetOptionsForOptionTest(cfg config.Config) domain.Options {
+	return domain.Options{
+		Directory:      "./../../../test",
+		IDField:        "id",
+		FileList:       cli.StringSlice{},
+		OutputFilename: "test-example-er-diagram",
+		OutputPath:     "./../../../test",
+		Tag:            "db",
+		Title:          "example_db",
+		ColumnNameCase: "snake_case",
+		TableNameCase:  "snake_case",
+		Config:         cfg,
 	}
 }

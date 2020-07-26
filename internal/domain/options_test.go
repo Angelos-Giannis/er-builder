@@ -8,7 +8,7 @@ import (
 
 	"github.com/eujoy/erbuilder/internal/config"
 	"github.com/eujoy/erbuilder/internal/domain"
-	"github.com/urfave/cli/v2"
+	"github.com/eujoy/erbuilder/test"
 )
 
 func TestNewOptions(t *testing.T) {
@@ -22,72 +22,41 @@ func TestNewOptions(t *testing.T) {
 
 func TestValidate(t *testing.T) {
 	cfg := config.New()
+	dataBuilder := test.NewDataBuilder()
 
 	testCases := map[string]struct {
 		options       domain.Options
 		expectedError error
 	}{
 		"Normal setup with valid values": {
-			options: domain.Options{
-				Directory:      "./../../../test/",
-				IDField:        "id",
-				FileList:       cli.StringSlice{},
-				OutputFilename: "test-example-er-diagram",
-				OutputPath:     "./../../../test",
-				Tag:            "db",
-				Title:          "example_db",
-				ColumnNameCase: "snake_case",
-				TableNameCase:  "snake_case",
-				Config:         cfg,
-			},
+			options:       dataBuilder.GetOptionsForOptionTest(cfg),
 			expectedError: nil,
 		},
 		"Attempt execution without providing any of directory and list of files": {
-			options: domain.Options{
-				Directory:      "",
-				IDField:        "id",
-				FileList:       cli.StringSlice{},
-				OutputFilename: "test-example-er-diagram",
-				OutputPath:     "./../../../test",
-				Tag:            "db",
-				Title:          "example_db",
-				ColumnNameCase: "snake_case",
-				TableNameCase:  "snake_case",
-				Config:         cfg,
-			},
+			options: func() domain.Options {
+				options := dataBuilder.GetOptionsForOptionTest(cfg)
+				options.Directory = ""
+				return options
+			}(),
 			expectedError: errors.New("Need to provide at least one of 'directory' or 'file_list'"),
 		},
 		"Attempt execution by providing invalid value for column name case": {
-			options: domain.Options{
-				Directory:      "./../../../test/",
-				IDField:        "id",
-				FileList:       cli.StringSlice{},
-				OutputFilename: "test-example-er-diagram",
-				OutputPath:     "./../../../test",
-				Tag:            "db",
-				Title:          "example_db",
-				ColumnNameCase: "invalid_case",
-				TableNameCase:  "snake_case",
-				Config:         cfg,
-			},
+			options: func() domain.Options {
+				options := dataBuilder.GetOptionsForOptionTest(cfg)
+				options.ColumnNameCase = "invalid_case"
+				return options
+			}(),
 			expectedError: fmt.Errorf(
 				"The provided value for column name case is not valid. Allowed values : %v",
 				cfg.Settings.AllowedColumnNameCaseValues,
 			),
 		},
 		"Attempt execution by providing invalid value for table name case": {
-			options: domain.Options{
-				Directory:      "./../../../test/",
-				IDField:        "id",
-				FileList:       cli.StringSlice{},
-				OutputFilename: "test-example-er-diagram",
-				OutputPath:     "./../../../test",
-				Tag:            "db",
-				Title:          "example_db",
-				ColumnNameCase: "snake_case",
-				TableNameCase:  "invalid_case",
-				Config:         config.New(),
-			},
+			options: func() domain.Options {
+				options := dataBuilder.GetOptionsForOptionTest(cfg)
+				options.TableNameCase = "invalid_case"
+				return options
+			}(),
 			expectedError: fmt.Errorf(
 				"The provided value for table name case is not valid. Allowed values : %v",
 				cfg.Settings.AllowedTableNameCaseValues,
@@ -105,156 +74,78 @@ func TestValidate(t *testing.T) {
 	}
 }
 
-func TestGetCommonFields(t *testing.T) {
-	expectedOptionName := "common_field"
-
+func TestOptionFlags(t *testing.T) {
 	options := &domain.Options{}
-	actualFlag := options.GetCommonFields()
 
-	if expectedOptionName != fmt.Sprintf("%v", actualFlag.Name) {
-		t.Errorf("Expected to get a flag with name '%v' but got one with flag name '%v'.", expectedOptionName, actualFlag.Name)
-	}
-	if reflect.TypeOf(&cli.StringSliceFlag{}) != reflect.TypeOf(actualFlag) {
-		t.Errorf("Expected to get a flag of type '%v' but got one of type '%v'.", reflect.TypeOf(&cli.StringSliceFlag{}), reflect.TypeOf(actualFlag))
+	t.Run("Test GetCommonFields", func(t *testing.T) {
+		actualFlag := options.GetCommonFields()
+		validateFlagIsAsExpected(t, "common_field", actualFlag.Name, "stringSliceFlag", reflect.TypeOf(actualFlag).Name())
+	})
+
+	t.Run("Test GetDirectoryFlag", func(t *testing.T) {
+		actualFlag := options.GetDirectoryFlag()
+		validateFlagIsAsExpected(t, "directory", actualFlag.Name, "stringFlag", reflect.TypeOf(actualFlag).Name())
+	})
+
+	t.Run("Test GetFileList", func(t *testing.T) {
+		actualFlag := options.GetFileList()
+		validateFlagIsAsExpected(t, "file_list", actualFlag.Name, "stringSliceFlag", reflect.TypeOf(actualFlag).Name())
+	})
+
+	t.Run("Test GetIDField", func(t *testing.T) {
+		actualFlag := options.GetIDField()
+		validateFlagIsAsExpected(t, "id_field", actualFlag.Name, "stringFlag", reflect.TypeOf(actualFlag).Name())
+	})
+
+	t.Run("Test GetOutputFilename", func(t *testing.T) {
+		actualFlag := options.GetOutputFilename()
+		validateFlagIsAsExpected(t, "output_filename", actualFlag.Name, "stringFlag", reflect.TypeOf(actualFlag).Name())
+	})
+
+	t.Run("Test GetOutputPath", func(t *testing.T) {
+		actualFlag := options.GetOutputPath()
+		validateFlagIsAsExpected(t, "output_path", actualFlag.Name, "stringFlag", reflect.TypeOf(actualFlag).Name())
+	})
+
+	t.Run("Test GetTag", func(t *testing.T) {
+		actualFlag := options.GetTag()
+		validateFlagIsAsExpected(t, "tag", actualFlag.Name, "stringFlag", reflect.TypeOf(actualFlag).Name())
+	})
+
+	t.Run("Test GetTitle", func(t *testing.T) {
+		actualFlag := options.GetTitle()
+		validateFlagIsAsExpected(t, "title", actualFlag.Name, "stringFlag", reflect.TypeOf(actualFlag).Name())
+	})
+
+	t.Run("Test GetColumnNameCase", func(t *testing.T) {
+		actualFlag := options.GetColumnNameCase()
+		validateFlagIsAsExpected(t, "column_name_case", actualFlag.Name, "stringFlag", reflect.TypeOf(actualFlag).Name())
+	})
+
+	t.Run("Test GetTableNameCase", func(t *testing.T) {
+		actualFlag := options.GetTableNameCase()
+		validateFlagIsAsExpected(t, "table_name_case", actualFlag.Name, "stringFlag", reflect.TypeOf(actualFlag).Name())
+	})
+
+	t.Run("Test GetTableNamePlural", func(t *testing.T) {
+		actualFlag := options.GetTableNamePlural()
+		validateFlagIsAsExpected(t, "table_in_plural", actualFlag.Name, "boolFlag", reflect.TypeOf(actualFlag).Name())
+	})
+}
+
+func validateFlagIsAsExpected(t *testing.T, expectedFlagName, actualFlagName, expectedFlagType, actualFlagType string) {
+	checkExpectedFlagName(t, expectedFlagName, actualFlagName)
+	checkExpectedFlagType(t, expectedFlagType, actualFlagType)
+}
+
+func checkExpectedFlagName(t *testing.T, expectedFlagName, actualFlagName string) {
+	if expectedFlagName != fmt.Sprintf("%v", actualFlagName) {
+		t.Errorf("Expected to get a flag with name '%v' but got one with flag name '%v'.", expectedFlagName, actualFlagName)
 	}
 }
 
-func TestGetDirectoryFlag(t *testing.T) {
-	expectedOptionName := "directory"
-
-	options := &domain.Options{}
-	actualFlag := options.GetDirectoryFlag()
-
-	if expectedOptionName != fmt.Sprintf("%v", actualFlag.Name) {
-		t.Errorf("Expected to get a flag with name '%v' but got one with flag name '%v'.", expectedOptionName, actualFlag.Name)
-	}
-	if reflect.TypeOf(&cli.StringFlag{}) != reflect.TypeOf(actualFlag) {
-		t.Errorf("Expected to get a flag of type '%v' but got one of type '%v'.", reflect.TypeOf(&cli.StringFlag{}), reflect.TypeOf(actualFlag))
-	}
-}
-
-func TestGetFileList(t *testing.T) {
-	expectedOptionName := "file_list"
-
-	options := &domain.Options{}
-	actualFlag := options.GetFileList()
-
-	if expectedOptionName != fmt.Sprintf("%v", actualFlag.Name) {
-		t.Errorf("Expected to get a flag with name '%v' but got one with flag name '%v'.", expectedOptionName, actualFlag.Name)
-	}
-	if reflect.TypeOf(&cli.StringSliceFlag{}) != reflect.TypeOf(actualFlag) {
-		t.Errorf("Expected to get a flag of type '%v' but got one of type '%v'.", reflect.TypeOf(&cli.StringSliceFlag{}), reflect.TypeOf(actualFlag))
-	}
-}
-
-func TestGetIDField(t *testing.T) {
-	expectedOptionName := "id_field"
-
-	options := &domain.Options{}
-	actualFlag := options.GetIDField()
-
-	if expectedOptionName != fmt.Sprintf("%v", actualFlag.Name) {
-		t.Errorf("Expected to get a flag with name '%v' but got one with flag name '%v'.", expectedOptionName, actualFlag.Name)
-	}
-	if reflect.TypeOf(&cli.StringFlag{}) != reflect.TypeOf(actualFlag) {
-		t.Errorf("Expected to get a flag of type '%v' but got one of type '%v'.", reflect.TypeOf(&cli.StringFlag{}), reflect.TypeOf(actualFlag))
-	}
-}
-
-func TestGetOutputFilename(t *testing.T) {
-	expectedOptionName := "output_filename"
-
-	options := &domain.Options{}
-	actualFlag := options.GetOutputFilename()
-
-	if expectedOptionName != fmt.Sprintf("%v", actualFlag.Name) {
-		t.Errorf("Expected to get a flag with name '%v' but got one with flag name '%v'.", expectedOptionName, actualFlag.Name)
-	}
-	if reflect.TypeOf(&cli.StringFlag{}) != reflect.TypeOf(actualFlag) {
-		t.Errorf("Expected to get a flag of type '%v' but got one of type '%v'.", reflect.TypeOf(&cli.StringFlag{}), reflect.TypeOf(actualFlag))
-	}
-}
-
-func TestGetOutputPath(t *testing.T) {
-	expectedOptionName := "output_path"
-
-	options := &domain.Options{}
-	actualFlag := options.GetOutputPath()
-
-	if expectedOptionName != fmt.Sprintf("%v", actualFlag.Name) {
-		t.Errorf("Expected to get a flag with name '%v' but got one with flag name '%v'.", expectedOptionName, actualFlag.Name)
-	}
-	if reflect.TypeOf(&cli.StringFlag{}) != reflect.TypeOf(actualFlag) {
-		t.Errorf("Expected to get a flag of type '%v' but got one of type '%v'.", reflect.TypeOf(&cli.StringFlag{}), reflect.TypeOf(actualFlag))
-	}
-}
-
-func TestGetTag(t *testing.T) {
-	expectedOptionName := "tag"
-
-	options := &domain.Options{}
-	actualFlag := options.GetTag()
-
-	if expectedOptionName != fmt.Sprintf("%v", actualFlag.Name) {
-		t.Errorf("Expected to get a flag with name '%v' but got one with flag name '%v'.", expectedOptionName, actualFlag.Name)
-	}
-	if reflect.TypeOf(&cli.StringFlag{}) != reflect.TypeOf(actualFlag) {
-		t.Errorf("Expected to get a flag of type '%v' but got one of type '%v'.", reflect.TypeOf(&cli.StringFlag{}), reflect.TypeOf(actualFlag))
-	}
-}
-
-func TestGetTitle(t *testing.T) {
-	expectedOptionName := "title"
-
-	options := &domain.Options{}
-	actualFlag := options.GetTitle()
-
-	if expectedOptionName != fmt.Sprintf("%v", actualFlag.Name) {
-		t.Errorf("Expected to get a flag with name '%v' but got one with flag name '%v'.", expectedOptionName, actualFlag.Name)
-	}
-	if reflect.TypeOf(&cli.StringFlag{}) != reflect.TypeOf(actualFlag) {
-		t.Errorf("Expected to get a flag of type '%v' but got one of type '%v'.", reflect.TypeOf(&cli.StringFlag{}), reflect.TypeOf(actualFlag))
-	}
-}
-
-func TestGetColumnNameCase(t *testing.T) {
-	expectedOptionName := "column_name_case"
-
-	options := &domain.Options{}
-	actualFlag := options.GetColumnNameCase()
-
-	if expectedOptionName != fmt.Sprintf("%v", actualFlag.Name) {
-		t.Errorf("Expected to get a flag with name '%v' but got one with flag name '%v'.", expectedOptionName, actualFlag.Name)
-	}
-	if reflect.TypeOf(&cli.StringFlag{}) != reflect.TypeOf(actualFlag) {
-		t.Errorf("Expected to get a flag of type '%v' but got one of type '%v'.", reflect.TypeOf(&cli.StringFlag{}), reflect.TypeOf(actualFlag))
-	}
-}
-
-func TestGetTableNameCase(t *testing.T) {
-	expectedOptionName := "table_name_case"
-
-	options := &domain.Options{}
-	actualFlag := options.GetTableNameCase()
-
-	if expectedOptionName != fmt.Sprintf("%v", actualFlag.Name) {
-		t.Errorf("Expected to get a flag with name '%v' but got one with flag name '%v'.", expectedOptionName, actualFlag.Name)
-	}
-	if reflect.TypeOf(&cli.StringFlag{}) != reflect.TypeOf(actualFlag) {
-		t.Errorf("Expected to get a flag of type '%v' but got one of type '%v'.", reflect.TypeOf(&cli.StringFlag{}), reflect.TypeOf(actualFlag))
-	}
-}
-
-func TestGetTableNamePlural(t *testing.T) {
-	expectedOptionName := "table_in_plural"
-
-	options := &domain.Options{}
-	actualFlag := options.GetTableNamePlural()
-
-	if expectedOptionName != fmt.Sprintf("%v", actualFlag.Name) {
-		t.Errorf("Expected to get a flag with name '%v' but got one with flag name '%v'.", expectedOptionName, actualFlag.Name)
-	}
-	if reflect.TypeOf(&cli.BoolFlag{}) != reflect.TypeOf(actualFlag) {
-		t.Errorf("Expected to get a flag of type '%v' but got one of type '%v'.", reflect.TypeOf(&cli.BoolFlag{}), reflect.TypeOf(actualFlag))
+func checkExpectedFlagType(t *testing.T, expectedFlagType, actualFlagType string) {
+	if expectedFlagType == actualFlagType {
+		t.Errorf("Expected to get a flag of type '%v' but got one of type '%v'.", expectedFlagType, actualFlagType)
 	}
 }
