@@ -1,0 +1,43 @@
+title {label: "example_db"}
+
+# Definition of tables.
+[address]
+	*id {label: "integer"}
+	+city_id {label: "integer"}
+	created_at {label: ""}
+	deleted_at {label: ""}
+	zip_code {label: "varchar"}
+	number {label: "varchar"}
+	street {label: "varchar"}
+	updated_at {label: ""}
+	+user_id {label: "integer"}
+
+[city]
+	*id {label: "integer"}
+	created_at {label: ""}
+	deleted_at {label: ""}
+	name {label: "varchar"}
+	updated_at {label: ""}
+
+[phone_number]
+	*id {label: "integer"}
+	created_at {label: ""}
+	deleted_at {label: ""}
+	landline {label: "varchar"}
+	mobile {label: "varchar"}
+	updated_at {label: ""}
+	+user_id {label: "integer"}
+
+[user]
+	*id {label: "integer"}
+	created_at {label: ""}
+	deleted_at {label: ""}
+	lastname {label: "varchar"}
+	first_name {label: "varchar"}
+	updated_at {label: ""}
+
+
+# Definition of foreign keys.
+address *--* city {label: "city_id"}
+address *--* user {label: "user_id"}
+phone_number *--* user {label: "user_id"}
