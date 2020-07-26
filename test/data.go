@@ -22,148 +22,43 @@ func (d *DataBuilder) GetWriterTestDiagram() domain.Diagram {
 			domain.Table{
 				Name: "user",
 				ColumnList: []domain.Column{
-					domain.Column{
-						Name:         "first_name",
-						Type:         "varchar",
-						IsPrimaryKey: false,
-						IsForeignKey: false,
-						IsExtraField: false,
-					},
-					domain.Column{
-						Name:         "lastname",
-						Type:         "varchar",
-						IsPrimaryKey: false,
-						IsForeignKey: false,
-						IsExtraField: false,
-					},
-					domain.Column{
-						Name:         "id",
-						Type:         "integer",
-						IsPrimaryKey: true,
-						IsForeignKey: false,
-						IsExtraField: false,
-					},
+					createColumn("first_name", "varchar", false, false, false),
+					createColumn("lastname", "varchar", false, false, false),
+					createColumn("id", "integer", true, false, false),
 				},
 			},
 			domain.Table{
 				Name: "phone_number",
 				ColumnList: []domain.Column{
-					domain.Column{
-						Name:         "user_id",
-						Type:         "integer",
-						IsPrimaryKey: false,
-						IsForeignKey: true,
-						IsExtraField: false,
-					},
-					domain.Column{
-						Name:         "mobile",
-						Type:         "varchar",
-						IsPrimaryKey: false,
-						IsForeignKey: false,
-						IsExtraField: false,
-					},
-					domain.Column{
-						Name:         "landline",
-						Type:         "varchar",
-						IsPrimaryKey: false,
-						IsForeignKey: false,
-						IsExtraField: false,
-					},
-					domain.Column{
-						Name:         "id",
-						Type:         "integer",
-						IsPrimaryKey: true,
-						IsForeignKey: false,
-						IsExtraField: false,
-					},
+					createColumn("user_id", "integer", false, true, false),
+					createColumn("mobile", "varchar", false, false, false),
+					createColumn("landline", "varchar", false, false, false),
+					createColumn("id", "integer", true, false, false),
 				},
 			},
 			domain.Table{
 				Name: "address",
 				ColumnList: []domain.Column{
-					domain.Column{
-						Name:         "id",
-						Type:         "integer",
-						IsPrimaryKey: true,
-						IsForeignKey: false,
-						IsExtraField: false,
-					},
-					domain.Column{
-						Name:         "user_id",
-						Type:         "integer",
-						IsPrimaryKey: false,
-						IsForeignKey: true,
-						IsExtraField: false,
-					},
-					domain.Column{
-						Name:         "street",
-						Type:         "varchar",
-						IsPrimaryKey: false,
-						IsForeignKey: false,
-						IsExtraField: false,
-					},
-					domain.Column{
-						Name:         "number",
-						Type:         "varchar",
-						IsPrimaryKey: false,
-						IsForeignKey: false,
-						IsExtraField: false,
-					},
-					domain.Column{
-						Name:         "zip_code",
-						Type:         "varchar",
-						IsPrimaryKey: false,
-						IsForeignKey: false,
-						IsExtraField: false,
-					},
-					domain.Column{
-						Name:         "city_id",
-						Type:         "integer",
-						IsPrimaryKey: false,
-						IsForeignKey: true,
-						IsExtraField: false,
-					},
+					createColumn("id", "integer", true, false, false),
+					createColumn("user_id", "integer", false, true, false),
+					createColumn("street", "varchar", false, false, false),
+					createColumn("number", "varchar", false, false, false),
+					createColumn("zip_code", "varchar", false, false, false),
+					createColumn("city_id", "integer", false, true, false),
 				},
 			},
 			domain.Table{
 				Name: "city",
 				ColumnList: []domain.Column{
-					domain.Column{
-						Name:         "id",
-						Type:         "integer",
-						IsPrimaryKey: true,
-						IsForeignKey: false,
-						IsExtraField: false,
-					},
-					domain.Column{
-						Name:         "name",
-						Type:         "varchar",
-						IsPrimaryKey: false,
-						IsForeignKey: false,
-						IsExtraField: false,
-					},
+					createColumn("id", "integer", true, false, false),
+					createColumn("name", "varchar", false, false, false),
 				},
 			},
 		},
 		ReferenceList: []domain.Reference{
-			domain.Reference{
-				FromTableName:   "phone_number",
-				FromTableColumn: "user_id",
-				ToTableName:     "user",
-				TypeOfReference: "*--*",
-			},
-			domain.Reference{
-				FromTableName:   "address",
-				FromTableColumn: "user_id",
-				ToTableName:     "user",
-				TypeOfReference: "*--*",
-			},
-			domain.Reference{
-				FromTableName:   "address",
-				FromTableColumn: "city_id",
-				ToTableName:     "city",
-				TypeOfReference: "*--*",
-			},
+			createReference("phone_number", "user_id", "user", "*--*"),
+			createReference("address", "user_id", "user", "*--*"),
+			createReference("address", "city_id", "city", "*--*"),
 		},
 	}
 }
@@ -181,5 +76,26 @@ func (d *DataBuilder) GetOptionsForOptionTest(cfg config.Config) domain.Options 
 		ColumnNameCase: "snake_case",
 		TableNameCase:  "snake_case",
 		Config:         cfg,
+	}
+}
+
+// createColumn creates and returns a domain.Column instance with the provided values.
+func createColumn(name, colType string, isPrimaryKey, isForeignKey, isExtraField bool) domain.Column {
+	return domain.Column{
+		Name:         name,
+		Type:         colType,
+		IsPrimaryKey: isPrimaryKey,
+		IsForeignKey: isForeignKey,
+		IsExtraField: isExtraField,
+	}
+}
+
+// createReference creates and returns a domain.Reference instance with the provided values.
+func createReference(fromTableName, fromTableColumn, toTableName, typeOfReference string) domain.Reference {
+	return domain.Reference{
+		FromTableName:   fromTableName,
+		FromTableColumn: fromTableColumn,
+		ToTableName:     toTableName,
+		TypeOfReference: typeOfReference,
 	}
 }
