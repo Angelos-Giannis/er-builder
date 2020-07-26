@@ -9,6 +9,7 @@
 
 [![Go Report Card](https://goreportcard.com/badge/github.com/eujoy/erbuilder)](https://goreportcard.com/report/github.com/eujoy/erbuilder)
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/0c302dec02df4805ba27c9eda331ef98)](https://www.codacy.com/manual/eujoy/erbuilder?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=eujoy/erbuilder&amp;utm_campaign=Badge_Grade)
+[![Codacy Badge](https://app.codacy.com/project/badge/Coverage/0c302dec02df4805ba27c9eda331ef98)](https://www.codacy.com/manual/eujoy/erbuilder?utm_source=github.com&utm_medium=referral&utm_content=eujoy/erbuilder&utm_campaign=Badge_Coverage)
 [![master-actions Actions Status](https://github.com/eujoy/erbuilder/workflows/master-actions/badge.svg)](https://github.com/eujoy/erbuilder/actions)
 ![.github/workflows/release-actions.yaml](https://github.com/eujoy/erbuilder/workflows/.github/workflows/release-actions.yaml/badge.svg)
 
