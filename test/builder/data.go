@@ -19,7 +19,7 @@ func (d *DataBuilder) GetWriterTestDiagram() domain.Diagram {
 	return domain.Diagram{
 		Title: "example_db",
 		TableList: []domain.Table{
-			domain.Table{
+			{
 				Name: "user",
 				ColumnList: []domain.Column{
 					createColumn("first_name", "varchar", false, false, false),
@@ -27,7 +27,7 @@ func (d *DataBuilder) GetWriterTestDiagram() domain.Diagram {
 					createColumn("id", "integer", true, false, false),
 				},
 			},
-			domain.Table{
+			{
 				Name: "phone_number",
 				ColumnList: []domain.Column{
 					createColumn("user_id", "integer", false, true, false),
@@ -36,7 +36,7 @@ func (d *DataBuilder) GetWriterTestDiagram() domain.Diagram {
 					createColumn("id", "integer", true, false, false),
 				},
 			},
-			domain.Table{
+			{
 				Name: "address",
 				ColumnList: []domain.Column{
 					createColumn("id", "integer", true, false, false),
@@ -47,7 +47,7 @@ func (d *DataBuilder) GetWriterTestDiagram() domain.Diagram {
 					createColumn("city_id", "integer", false, true, false),
 				},
 			},
-			domain.Table{
+			{
 				Name: "city",
 				ColumnList: []domain.Column{
 					createColumn("id", "integer", true, false, false),
