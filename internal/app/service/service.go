@@ -191,16 +191,12 @@ func (s *Service) Build() ([]domain.Table, error) {
 			return []domain.Table{}, err
 		}
 
-		fmt.Println("aaaaaa")
-
 		for {
 			// perform the questions for table details.
 			err = survey.Ask(columnDefinitionQuestion, &cAnswers)
 			if err != nil {
 				return []domain.Table{}, err
 			}
-
-			fmt.Println("bbbbbbb")
 
 			cl := domain.Column{
 				Name:         s.util.GetCaseOfString(cAnswers.Name, s.options.ColumnNameCase),
