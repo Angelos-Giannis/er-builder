@@ -1,6 +1,9 @@
 package cmd
 
 import (
+	"encoding/json"
+	"errors"
+	"fmt"
 	"log"
 	"os"
 
@@ -29,6 +32,8 @@ func Main() {
 			Flags: []cli.Flag{
 				options.GetCommonFields(),
 				options.GetDirectoryFlag(),
+				options.GetExtraTablesDefinition(),
+				options.GetExtraTablesSurvey(),
 				options.GetFileList(),
 				options.GetIDField(),
 				options.GetOutputFilename(),
@@ -50,6 +55,34 @@ func Main() {
 
 				srv := service.New(options, util, writer)
 				return srv.Generate()
+			},
+		},
+		{
+			Name:    "build",
+			Aliases: []string{"b"},
+			Usage:   "Use this command to create a json object with extra table definition.",
+			Flags: []cli.Flag{
+				options.GetExtraTablesSurvey(),
+			},
+			Action: func(c *cli.Context) error {
+				if !options.ExtraTablesSurvey {
+					err := errors.New("undefined required flag to run the builder")
+					return err
+				}
+
+				srv := service.New(options, nil, nil)
+				extraDefinition, err := srv.Build()
+				if err != nil {
+					return err
+				}
+
+				byteDefinition, err := json.Marshal(extraDefinition)
+				if err != nil {
+					return err
+				}
+				fmt.Println(string(byteDefinition))
+
+				return nil
 			},
 		},
 	}

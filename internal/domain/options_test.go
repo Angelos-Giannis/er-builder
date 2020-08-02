@@ -87,6 +87,11 @@ func TestOptionFlags(t *testing.T) {
 		validateFlagIsAsExpected(t, "directory", actualFlag.Name, "stringFlag", reflect.TypeOf(actualFlag).Name())
 	})
 
+	t.Run("Test GetExtraTablesDefinition", func(t *testing.T) {
+		actualFlag := options.GetExtraTablesDefinition()
+		validateFlagIsAsExpected(t, "extra_tables_definition", actualFlag.Name, "stringFlag", reflect.TypeOf(actualFlag).Name())
+	})
+
 	t.Run("Test GetFileList", func(t *testing.T) {
 		actualFlag := options.GetFileList()
 		validateFlagIsAsExpected(t, "file_list", actualFlag.Name, "stringSliceFlag", reflect.TypeOf(actualFlag).Name())
@@ -130,6 +135,11 @@ func TestOptionFlags(t *testing.T) {
 	t.Run("Test GetTableNamePlural", func(t *testing.T) {
 		actualFlag := options.GetTableNamePlural()
 		validateFlagIsAsExpected(t, "table_in_plural", actualFlag.Name, "boolFlag", reflect.TypeOf(actualFlag).Name())
+	})
+
+	t.Run("Test GetExtraTablesSurvey", func(t *testing.T) {
+		actualFlag := options.GetExtraTablesSurvey()
+		validateFlagIsAsExpected(t, "extra_tables", actualFlag.Name, "boolFlag", reflect.TypeOf(actualFlag).Name())
 	})
 }
 
