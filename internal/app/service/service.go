@@ -43,7 +43,8 @@ var tableNameQuestion = []*survey.Question{
 		},
 		Validate: func(val interface{}) error {
 			_, err := colors.ParseHEX(fmt.Sprintf("%v", val))
-			if err != colors.ErrBadColor {
+			fmt.Println(err)
+			if err != nil && err != colors.ErrBadColor {
 				return errors.New("the provided value should a hexadecimal color value")
 			}
 			return nil
@@ -190,6 +191,8 @@ func (s *Service) Build() ([]domain.Table, error) {
 			return []domain.Table{}, err
 		}
 
+		fmt.Println("aaaaaa")
+
 		for {
 			// perform the questions for table details.
 			err = survey.Ask(columnDefinitionQuestion, &cAnswers)
@@ -197,8 +200,10 @@ func (s *Service) Build() ([]domain.Table, error) {
 				return []domain.Table{}, err
 			}
 
+			fmt.Println("bbbbbbb")
+
 			cl := domain.Column{
-				Name:         cAnswers.Name,
+				Name:         s.util.GetCaseOfString(cAnswers.Name, s.options.ColumnNameCase),
 				Type:         cAnswers.Type,
 				IsPrimaryKey: cAnswers.IsPrimaryKey,
 				IsForeignKey: cAnswers.IsForeignKey,
@@ -214,7 +219,7 @@ func (s *Service) Build() ([]domain.Table, error) {
 		}
 
 		t := domain.Table{
-			Name:       tAnswers.Name,
+			Name:       s.util.GetCaseOfString(tAnswers.Name, s.options.TableNameCase),
 			ColumnList: columnList,
 			Color:      tAnswers.Color,
 		}

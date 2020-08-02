@@ -63,6 +63,8 @@ func Main() {
 			Usage:   "Use this command to create a json object with extra table definition.",
 			Flags: []cli.Flag{
 				options.GetExtraTablesSurvey(),
+				options.GetColumnNameCase(),
+				options.GetTableNameCase(),
 			},
 			Action: func(c *cli.Context) error {
 				if !options.ExtraTablesSurvey {
@@ -70,7 +72,8 @@ func Main() {
 					return err
 				}
 
-				srv := service.New(options, nil, nil)
+				util := util.New()
+				srv := service.New(options, util, nil)
 				extraDefinition, err := srv.Build()
 				if err != nil {
 					return err
