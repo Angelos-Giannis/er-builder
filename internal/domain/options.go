@@ -11,17 +11,22 @@ import (
 
 // Options describe the allowed options of the cli tool.
 type Options struct {
-	CommonFields    cli.StringSlice
-	Directory       string
-	FileList        cli.StringSlice
-	IDField         string
-	OutputFilename  string
-	OutputPath      string
-	Tag             string
-	Title           string
-	ColumnNameCase  string
-	TableNameCase   string
-	TableNamePlural bool
+	CommonFields          cli.StringSlice
+	Directory             string
+	ExtraTablesDefinition string
+	FileList              cli.StringSlice
+	IDField               string
+	OutputFilename        string
+	OutputPath            string
+	Tag                   string
+	Title                 string
+	ColumnNameCase        string
+	TableNameCase         string
+	TableNamePlural       bool
+
+	// ExtraTablesSurvey guides the user through a wizard to provide more tables that
+	// are not included in the respective files.
+	ExtraTablesSurvey bool
 
 	Config config.Config
 }
@@ -86,6 +91,18 @@ func (o *Options) GetDirectoryFlag() *cli.StringFlag {
 		Usage:       "Directory to retrieve the files from.",
 		Value:       "",
 		Destination: &o.Directory,
+		Required:    false,
+	}
+}
+
+// GetExtraTablesDefinition returns the definition for directory flag.
+func (o *Options) GetExtraTablesDefinition() *cli.StringFlag {
+	return &cli.StringFlag{
+		Name:        "extra_tables_definition",
+		Aliases:     []string{"etd"},
+		Usage:       "Provide the definition for more tables (out of the structures) to be included, in json format.",
+		Value:       "",
+		Destination: &o.ExtraTablesDefinition,
 		Required:    false,
 	}
 }
@@ -192,6 +209,18 @@ func (o *Options) GetTableNamePlural() *cli.BoolFlag {
 		Usage:       "Define whether the table name should be in plural.",
 		Value:       false,
 		Destination: &o.TableNamePlural,
+		Required:    false,
+	}
+}
+
+// GetExtraTablesSurvey returns the definition for title flag.
+func (o *Options) GetExtraTablesSurvey() *cli.BoolFlag {
+	return &cli.BoolFlag{
+		Name:        "extra_tables",
+		Aliases:     []string{"e"},
+		Usage:       "Display a wizart to define more tables.",
+		Value:       false,
+		Destination: &o.ExtraTablesSurvey,
 		Required:    false,
 	}
 }

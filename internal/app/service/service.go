@@ -1,6 +1,8 @@
 package service
 
 import (
+	"encoding/json"
+	"errors"
 	"fmt"
 	"go/ast"
 	"go/parser"
@@ -12,8 +14,96 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/AlecAivazis/survey/v2"
 	"github.com/eujoy/erbuilder/internal/domain"
+	"gopkg.in/go-playground/colors.v1"
 )
+
+const (
+	columnTypeInteger = "integer"
+	columnTypeVarchar = "varchar"
+	columnTypeOther   = "other"
+
+	addMoreTable   = "Table"
+	addMoreColumn  = "Column"
+	addMoreNothing = "Nothing"
+)
+
+var tableNameQuestion = []*survey.Question{
+	{
+		Name:     "table_name",
+		Prompt:   &survey.Input{Message: "What is the name table name?"},
+		Validate: survey.Required,
+	},
+	{
+		Name: "table_color",
+		Prompt: &survey.Input{
+			Message: "What should be the background color for the table?",
+			Default: "#ebe486",
+		},
+		Validate: func(val interface{}) error {
+			_, err := colors.ParseHEX(fmt.Sprintf("%v", val))
+			if err != colors.ErrBadColor {
+				return errors.New("the provided value should a hexadecimal color value")
+			}
+			return nil
+		},
+	},
+}
+
+var columnDefinitionQuestion = []*survey.Question{
+	{
+		Name:      "column_name",
+		Prompt:    &survey.Input{Message: "What is the name of the column?"},
+		Validate:  survey.Required,
+		Transform: survey.Title,
+	},
+	{
+		Name: "column_type",
+		Prompt: &survey.Select{
+			Message: "Choose the type of the column:",
+			Options: []string{columnTypeInteger, columnTypeVarchar, columnTypeOther},
+			Default: "varchar",
+		},
+	},
+	{
+		Name: "is_primary_key",
+		Prompt: &survey.Confirm{
+			Message: "Is this field a primary key?",
+			Default: false,
+		},
+	},
+	{
+		Name: "is_foreign_key",
+		Prompt: &survey.Confirm{
+			Message: "Is this field a foreign key?",
+			Default: false,
+		},
+	},
+	{
+		Name: "add_more",
+		Prompt: &survey.Select{
+			Message: "Do you want to add some more:",
+			Options: []string{addMoreTable, addMoreColumn, addMoreNothing},
+			Default: addMoreColumn,
+		},
+	},
+}
+
+// tableAnswer captures the answers for the table definition questions.
+type tableAnswer struct {
+	Name  string `survey:"table_name"`
+	Color string `survey:"table_color"`
+}
+
+// columnAnswer captures the answers for the column related questions.
+type columnAnswer struct {
+	Name         string `survey:"column_name"`
+	Type         string `survey:"column_type"`
+	IsPrimaryKey bool   `survey:"is_primary_key"`
+	IsForeignKey bool   `survey:"is_foreign_key"`
+	AddMore      string `survey:"add_more"`
+}
 
 type util interface {
 	GetCaseOfString(initialValue, convertToCase string) string
@@ -58,13 +148,85 @@ func (s *Service) Generate() error {
 
 	s.enrichForeignKeyReferences(&diagram)
 
+	if s.options.ExtraTablesSurvey {
+		extraTables, err := s.Build()
+		if err != nil {
+			return err
+		}
+		diagram.TableList = append(diagram.TableList, extraTables...)
+	}
+
+	if s.options.ExtraTablesDefinition != "" {
+		var extraTables []domain.Table
+		err := json.Unmarshal([]byte(s.options.ExtraTablesDefinition), &extraTables)
+		if err != nil {
+			return err
+		}
+		diagram.TableList = append(diagram.TableList, extraTables...)
+	}
+
 	err := s.writer.WriteFile(diagram)
 	if err != nil {
 		return err
 	}
 
 	return nil
+}
 
+// Build performs the action to build extra details for the cli tool.
+func (s *Service) Build() ([]domain.Table, error) {
+	var tableList []domain.Table
+	isCompleted := false
+
+	for {
+		var columnList []domain.Column
+
+		var tAnswers tableAnswer
+		var cAnswers columnAnswer
+
+		// perform the questions for table details.
+		err := survey.Ask(tableNameQuestion, &tAnswers)
+		if err != nil {
+			return []domain.Table{}, err
+		}
+
+		for {
+			// perform the questions for table details.
+			err = survey.Ask(columnDefinitionQuestion, &cAnswers)
+			if err != nil {
+				return []domain.Table{}, err
+			}
+
+			cl := domain.Column{
+				Name:         cAnswers.Name,
+				Type:         cAnswers.Type,
+				IsPrimaryKey: cAnswers.IsPrimaryKey,
+				IsForeignKey: cAnswers.IsForeignKey,
+				IsExtraField: false,
+			}
+
+			columnList = append(columnList, cl)
+
+			if cAnswers.AddMore != addMoreColumn {
+				isCompleted = (cAnswers.AddMore == addMoreNothing)
+				break
+			}
+		}
+
+		t := domain.Table{
+			Name:       tAnswers.Name,
+			ColumnList: columnList,
+			Color:      tAnswers.Color,
+		}
+
+		tableList = append(tableList, t)
+
+		if isCompleted {
+			break
+		}
+	}
+
+	return tableList, nil
 }
 
 // getAllTables retrieves and returns all the table definitions with their columns.
