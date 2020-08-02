@@ -19,6 +19,7 @@ jobs:
 
       - name: Run tests & Upload coverage to Codacy
         run: |
+          go mod vendor
           go get github.com/kyoh86/richgo
           go get github.com/schrej/godacov
           RICHGO_FORCE_COLOR=1 richgo test ./... -v -p=1 -count=1 -cover -coverprofile=coverage.out
