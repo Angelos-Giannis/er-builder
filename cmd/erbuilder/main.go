@@ -10,6 +10,7 @@ import (
 	"github.com/eujoy/erbuilder/internal/app/service"
 	"github.com/eujoy/erbuilder/internal/config"
 	"github.com/eujoy/erbuilder/internal/domain"
+	"github.com/eujoy/erbuilder/internal/pkg/survey"
 	"github.com/eujoy/erbuilder/internal/pkg/util"
 	"github.com/eujoy/erbuilder/internal/pkg/writer"
 	"github.com/urfave/cli/v2"
@@ -50,10 +51,11 @@ func Main() {
 					panic(err)
 				}
 
+				survey := survey.New()
 				util := util.New()
 				writer := writer.New(util, options.OutputPath, options.OutputFilename)
 
-				srv := service.New(options, util, writer)
+				srv := service.New(options, survey, util, writer)
 				return srv.Generate()
 			},
 		},
@@ -72,8 +74,9 @@ func Main() {
 					return err
 				}
 
+				survey := survey.New()
 				util := util.New()
-				srv := service.New(options, util, nil)
+				srv := service.New(options, survey, util, nil)
 				extraDefinition, err := srv.Build()
 				if err != nil {
 					return err

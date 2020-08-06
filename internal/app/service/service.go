@@ -14,7 +14,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/AlecAivazis/survey/v2"
+	externalSurvey "github.com/AlecAivazis/survey/v2"
 	"github.com/eujoy/erbuilder/internal/domain"
 	"gopkg.in/go-playground/colors.v1"
 )
@@ -29,15 +29,15 @@ const (
 	addMoreNothing = "Nothing"
 )
 
-var tableNameQuestion = []*survey.Question{
+var tableNameQuestion = []*externalSurvey.Question{
 	{
 		Name:     "table_name",
-		Prompt:   &survey.Input{Message: "What is the name table name?"},
-		Validate: survey.Required,
+		Prompt:   &externalSurvey.Input{Message: "What is the name table name?"},
+		Validate: externalSurvey.Required,
 	},
 	{
 		Name: "table_color",
-		Prompt: &survey.Input{
+		Prompt: &externalSurvey.Input{
 			Message: "What should be the background color for the table?",
 			Default: "#ebe486",
 		},
@@ -52,16 +52,16 @@ var tableNameQuestion = []*survey.Question{
 	},
 }
 
-var columnDefinitionQuestion = []*survey.Question{
+var columnDefinitionQuestion = []*externalSurvey.Question{
 	{
 		Name:      "column_name",
-		Prompt:    &survey.Input{Message: "What is the name of the column?"},
-		Validate:  survey.Required,
-		Transform: survey.Title,
+		Prompt:    &externalSurvey.Input{Message: "What is the name of the column?"},
+		Validate:  externalSurvey.Required,
+		Transform: externalSurvey.Title,
 	},
 	{
 		Name: "column_type",
-		Prompt: &survey.Select{
+		Prompt: &externalSurvey.Select{
 			Message: "Choose the type of the column:",
 			Options: []string{columnTypeInteger, columnTypeVarchar, columnTypeOther},
 			Default: "varchar",
@@ -69,21 +69,21 @@ var columnDefinitionQuestion = []*survey.Question{
 	},
 	{
 		Name: "is_primary_key",
-		Prompt: &survey.Confirm{
+		Prompt: &externalSurvey.Confirm{
 			Message: "Is this field a primary key?",
 			Default: false,
 		},
 	},
 	{
 		Name: "is_foreign_key",
-		Prompt: &survey.Confirm{
+		Prompt: &externalSurvey.Confirm{
 			Message: "Is this field a foreign key?",
 			Default: false,
 		},
 	},
 	{
 		Name: "add_more",
-		Prompt: &survey.Select{
+		Prompt: &externalSurvey.Select{
 			Message: "Do you want to add some more:",
 			Options: []string{addMoreTable, addMoreColumn, addMoreNothing},
 			Default: addMoreColumn,
@@ -91,19 +91,9 @@ var columnDefinitionQuestion = []*survey.Question{
 	},
 }
 
-// tableAnswer captures the answers for the table definition questions.
-type tableAnswer struct {
-	Name  string `survey:"table_name"`
-	Color string `survey:"table_color"`
-}
-
-// columnAnswer captures the answers for the column related questions.
-type columnAnswer struct {
-	Name         string `survey:"column_name"`
-	Type         string `survey:"column_type"`
-	IsPrimaryKey bool   `survey:"is_primary_key"`
-	IsForeignKey bool   `survey:"is_foreign_key"`
-	AddMore      string `survey:"add_more"`
+type survey interface {
+	AskTableDetails(questions []*externalSurvey.Question) (domain.TableAnswer, error)
+	AskColumnDetails(questions []*externalSurvey.Question) (domain.ColumnAnswer, error)
 }
 
 type util interface {
@@ -119,14 +109,16 @@ type writer interface {
 // Service describes the service flow.
 type Service struct {
 	options domain.Options
+	survey  survey
 	util    util
 	writer  writer
 }
 
 // New creates and returns a new service.
-func New(options domain.Options, util util, writer writer) *Service {
+func New(options domain.Options, survey survey, util util, writer writer) *Service {
 	return &Service{
 		options: options,
+		survey:  survey,
 		util:    util,
 		writer:  writer,
 	}
@@ -182,18 +174,15 @@ func (s *Service) Build() ([]domain.Table, error) {
 	for {
 		var columnList []domain.Column
 
-		var tAnswers tableAnswer
-		var cAnswers columnAnswer
-
 		// perform the questions for table details.
-		err := survey.Ask(tableNameQuestion, &tAnswers)
+		tAnswers, err := s.survey.AskTableDetails(tableNameQuestion)
 		if err != nil {
 			return []domain.Table{}, err
 		}
 
 		for {
 			// perform the questions for table details.
-			err = survey.Ask(columnDefinitionQuestion, &cAnswers)
+			cAnswers, err := s.survey.AskColumnDetails(columnDefinitionQuestion)
 			if err != nil {
 				return []domain.Table{}, err
 			}
