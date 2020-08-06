@@ -144,6 +144,11 @@ func validateGenerateExecution(t *testing.T, actualService *service.Service, act
 }
 
 func TestBuild(t *testing.T) {
+	defaultTableAnswer := domain.TableAnswer{
+		Name:  "my_table",
+		Color: "#aabbcc",
+	}
+
 	type setupFunc func(expectedError error) *service.Service
 	options := domain.Options{ExtraTablesSurvey: true}
 
@@ -171,10 +176,7 @@ func TestBuild(t *testing.T) {
 			expectedError: nil,
 			setupFn: func(expectedError error) *service.Service {
 				mockSurvey := mock.Survey{}
-				mockSurvey.On("AskTableDetails").Return(domain.TableAnswer{
-					Name:  "my_table",
-					Color: "#aabbcc",
-				}, expectedError)
+				mockSurvey.On("AskTableDetails").Return(defaultTableAnswer, expectedError)
 				mockSurvey.On("AskColumnDetails").Return(domain.ColumnAnswer{
 					Name:         "my_column",
 					Type:         "integer",
@@ -202,10 +204,7 @@ func TestBuild(t *testing.T) {
 			expectedError:      errors.New("failed to get column details"),
 			setupFn: func(expectedError error) *service.Service {
 				mockSurvey := mock.Survey{}
-				mockSurvey.On("AskTableDetails").Return(domain.TableAnswer{
-					Name:  "my_table",
-					Color: "#aabbcc",
-				}, nil)
+				mockSurvey.On("AskTableDetails").Return(defaultTableAnswer, nil)
 				mockSurvey.On("AskColumnDetails").Return(domain.ColumnAnswer{}, expectedError)
 
 				return service.New(options, &mockSurvey, util.New(), nil)
