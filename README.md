@@ -1,7 +1,7 @@
 # erbuilder
 
 [![GoDoc](https://godoc.org/github.com/eujoy/erbuilder?status.png)](https://pkg.go.dev/github.com/eujoy/erbuilder)
-![version](https://img.shields.io/badge/version-v0.5.0-brightgreen)
+![version](https://img.shields.io/badge/version-v0.6.0-brightgreen)
 ![golang-version](https://img.shields.io/badge/Go-1.14-blue)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
