@@ -1,7 +1,5 @@
-name: master-actions
-on:
-  push:
-    branches: [push, pull_request]
+name: push-pull-request-actions
+on: [push, pull_request]
 
 jobs:
   linting-and-test:
