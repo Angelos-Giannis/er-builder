@@ -104,9 +104,6 @@ func TestGenerate(t *testing.T) {
 			filenameSuffix:     "include-extra-tables-definition",
 			expectedOutputFile: "./../../../test/example-er-diagram-with-extra-tables.er",
 		},
-		//
-		// @todo Add test scenario for generating file and also include survey for extra tables.
-		//
 	}
 
 	for name, tc := range testCases {

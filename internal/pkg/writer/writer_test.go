@@ -25,8 +25,8 @@ func TestWriteFile(t *testing.T) {
 	dataBuilder := test.NewDataBuilder()
 	diagram := dataBuilder.GetWriterTestDiagram()
 
-	writer := writer.New(util.New(), "./../../../test", "test-writer-example-er-diagram")
-	err := writer.WriteFile(diagram)
+	wrt := writer.New(util.New(), "./../../../test", "test-writer-example-er-diagram")
+	err := wrt.WriteFile(diagram)
 	if err != nil {
 		t.Errorf("Expected to get nil as error but got '%v'.", err)
 	}

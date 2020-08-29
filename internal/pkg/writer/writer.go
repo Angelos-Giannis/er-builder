@@ -2,6 +2,7 @@ package writer
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"sort"
 
@@ -17,7 +18,7 @@ type Writer struct {
 	util           *util.Util
 }
 
-// New creates and returns a new writer instrance.
+// New creates and returns a new writer instance.
 func New(util *util.Util, outputPath, outputFilename string) *Writer {
 	return &Writer{
 		outputPath:     outputPath,
@@ -34,7 +35,12 @@ func (w *Writer) WriteFile(diagram domain.Diagram) error {
 	if err != nil {
 		return err
 	}
-	defer w.outputFile.Close()
+	defer func() {
+		err := w.outputFile.Close()
+		if err != nil {
+			log.Fatalf("Failed to close output file with error : %v", err)
+		}
+	}()
 
 	if diagram.Title != "" {
 		_, err = w.outputFile.WriteString(fmt.Sprintf("title {label: \"%v\"}\n\n", diagram.Title))
@@ -97,9 +103,11 @@ func (w *Writer) writeColumnsOfTable(columnList []domain.Column) error {
 	for _, column := range columnList {
 		idPrefix := ""
 		fkPrefix := ""
+
 		if column.IsPrimaryKey {
 			idPrefix = "*"
 		}
+
 		if column.IsForeignKey {
 			fkPrefix = "+"
 		}
@@ -113,6 +121,7 @@ func (w *Writer) writeColumnsOfTable(columnList []domain.Column) error {
 				column.Type,
 			),
 		)
+
 		if err != nil {
 			return err
 		}
