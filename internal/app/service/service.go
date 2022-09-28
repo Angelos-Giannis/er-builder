@@ -198,7 +198,7 @@ func (s *Service) Build() ([]domain.Table, error) {
 			columnList = append(columnList, cl)
 
 			if cAnswers.AddMore != addMoreColumn {
-				isCompleted = (cAnswers.AddMore == addMoreNothing)
+				isCompleted = cAnswers.AddMore == addMoreNothing
 				break
 			}
 		}
@@ -253,9 +253,14 @@ func (s *Service) getTableDefinition(typeSpec []ast.Spec) (domain.Table, bool) {
 	structDecl := typeSpec[0].(*ast.TypeSpec).Type.(*ast.StructType)
 	structName := fmt.Sprintf("%v", typeSpec[0].(*ast.TypeSpec).Name)
 
+	columnList := s.getTagFieldsFromStruct(tagRegexp, structDecl.Fields.List)
+	if len(columnList) == 0 {
+		return tableDetails, false
+	}
+
 	tableDetails = domain.Table{
 		Name:       s.util.GetCaseOfString(structName, s.options.TableNameCase),
-		ColumnList: s.getTagFieldsFromStruct(tagRegexp, structDecl.Fields.List),
+		ColumnList: columnList,
 	}
 
 	return tableDetails, true
@@ -283,12 +288,16 @@ func (s *Service) getTagFieldsFromStruct(tagRegexp *regexp.Regexp, fields []*ast
 		newCol := domain.Column{
 			Name:         columnName,
 			Type:         s.util.GetDBDataTypeFromCodeDataType(fmt.Sprintf("%v", field.Type)),
-			IsPrimaryKey: (s.options.IDField == columnName),
+			IsPrimaryKey: s.options.IDField == columnName,
 			IsForeignKey: false,
 			IsExtraField: false,
 		}
 		columns = append(columns, newCol)
-		pkFound = (pkFound || newCol.IsPrimaryKey)
+		pkFound = pkFound || newCol.IsPrimaryKey
+	}
+
+	if len(columns) == 0 {
+		return []domain.Column{}
 	}
 
 	if !pkFound {
@@ -362,7 +371,7 @@ func defineFilesToParse(directory string, filesList []string) []string {
 		}
 		for _, f := range files {
 			if f.IsDir() {
-				continue
+				filesToParse = append(filesToParse, defineFilesToParse(fmt.Sprintf("%v/%v", directory, f.Name()), []string{})...)
 			}
 
 			fullFilePath := fmt.Sprintf("%v/%v", directory, f.Name())
